@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useCategoriesStore, useColorsStore, useSizesStore, useTaxesStore } from '~/features/catalog'
+import { provideProductForm } from '../composables/useProductForm'
 import { useProductDraftStore } from '../stores/product-draft.store'
 import ProductBasicsSection from './ProductBasicsSection.vue'
 import ProductCreatedPanel from './ProductCreatedPanel.vue'
@@ -15,6 +16,7 @@ const sizes = useSizesStore()
 const colors = useColorsStore()
 const taxes = useTaxesStore()
 const alert = ref<HTMLElement | null>(null)
+provideProductForm('create', draft)
 
 // Catalogos en paralelo (checklist sec. 10)
 onMounted(() => {

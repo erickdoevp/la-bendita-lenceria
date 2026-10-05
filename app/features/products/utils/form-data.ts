@@ -26,3 +26,13 @@ export function buildProductFormData(payload: ProductPayload, files: ProductFile
 
   return body
 }
+
+/** Multipart "data" (Blob JSON) + archivos sueltos, p. ej. la foto de una variante. */
+export function buildJsonFormData(data: object, files: Record<string, File | null> = {}): FormData {
+  const body = new FormData()
+  body.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }))
+  for (const [name, file] of Object.entries(files)) {
+    if (file) body.append(name, file)
+  }
+  return body
+}

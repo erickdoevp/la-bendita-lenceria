@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
 import { ColorSwatch } from '~/features/catalog'
-import { STATUS_LABELS } from '../constants'
+import { PRODUCT_ROUTES, STATUS_LABELS } from '../constants'
 import type { ProductDetail } from '../types'
 
 const props = defineProps<{ product: ProductDetail }>()
@@ -145,6 +145,13 @@ const columns: TableColumn<Variant>[] = [
         icon="ph:plus"
         label="Crear otro artículo"
         @click="emit('createAnother')"
+      />
+      <UButton
+        color="neutral"
+        variant="outline"
+        icon="ph:pencil-simple"
+        label="Ver y editar"
+        :to="PRODUCT_ROUTES.detail(product.id)"
       />
     </div>
   </div>

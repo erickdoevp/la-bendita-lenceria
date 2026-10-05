@@ -37,6 +37,35 @@ export interface ProductCreateRequest {
   variants: VariantCreateRequest[]
 }
 
+/** Parte "data" de PATCH /products/{id}: null u omitido = sin cambio. */
+export interface ProductUpdateRequest {
+  name?: string
+  /** Mandarlo igual al actual lo vuelve "slug-2": solo si cambio. */
+  slug?: string
+  description?: RichTextDoc
+  basePrice?: number
+  categoryId?: string
+  taxConfigId?: string
+  status?: ProductStatus
+}
+
+/** Parte "data" de PATCH /products/{id}/variants/{variantId}. */
+export interface VariantUpdateRequest {
+  sku?: string
+  priceAdjustment?: number
+  costPrice?: number
+  active?: boolean
+}
+
+/** PATCH /products/{id}/images/{imageId}. */
+export interface ImageUpdateRequest {
+  altText?: string
+  position?: number
+  isPrimary?: boolean
+  colorId?: string
+  clearColor?: boolean
+}
+
 export interface ProductVariant {
   id: string
   size: Size

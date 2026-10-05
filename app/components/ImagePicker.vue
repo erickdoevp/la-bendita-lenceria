@@ -2,16 +2,18 @@
 /**
  * Selector de imagenes del panel sobre UFileUpload. Valida cada archivo con
  * imageFileSchema (mismos limites que el backend) y, con multiple, la primera
- * imagen es la principal.
+ * imagen es la principal (salvo markPrimary=false: se suman a una galeria que ya la tiene).
  */
 const props = withDefaults(defineProps<{
   multiple?: boolean
   label?: string
   error?: string
   compact?: boolean
+  markPrimary?: boolean
 }>(), {
   label: 'Arrastra imágenes o haz clic para elegir',
   error: undefined,
+  markPrimary: true,
 })
 
 const files = defineModel<File[]>({ required: true })
@@ -63,8 +65,8 @@ function makePrimary(index: number) {
             v-for="(file, index) in files"
             :key="`${file.name}-${file.lastModified}-${index}`"
             :file="file"
-            :primary="multiple && index === 0"
-            :can-promote="multiple"
+            :primary="multiple && markPrimary && index === 0"
+            :can-promote="multiple && markPrimary"
             @remove="remove(index)"
             @make-primary="makePrimary(index)"
           />

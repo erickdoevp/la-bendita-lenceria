@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { EditorToolbarItem } from '@nuxt/ui'
-import { useProductDraftStore } from '../stores/product-draft.store'
+import { useProductForm } from '../composables/useProductForm'
 
-const draft = useProductDraftStore()
-const slugPreview = computed(() => slugify(draft.form.name))
+const product = useProductForm()
+const slugPreview = computed(() => slugify(product.form.name))
+const slugHelp = computed(() => (product.mode === 'create'
+  ? `Si lo dejas vacío queda como /${slugPreview.value || 'nombre-del-articulo'}. Si ya existe se agrega -2.`
+  // El backend regenera el slug al renombrar si no se manda uno distinto al actual
+  : 'Cambiarlo rompe los enlaces ya compartidos. Si cambias el nombre y no tocas el slug, se genera uno nuevo.'))
 
 // Formato corto: la ficha del articulo no necesita titulos grandes, citas ni codigo
 const toolbarItems: EditorToolbarItem[][] = [
@@ -32,10 +36,10 @@ const toolbarItems: EditorToolbarItem[][] = [
     <div class="grid gap-5">
       <UFormField
         label="Nombre"
-        :error="draft.fieldErrors.name"
+        :error="product.fieldErrors.name"
       >
         <UInput
-          v-model="draft.form.name"
+          v-model="product.form.name"
           placeholder="Bralette de encaje Aurora"
           autocomplete="off"
         />
@@ -43,12 +47,12 @@ const toolbarItems: EditorToolbarItem[][] = [
 
       <UFormField
         label="Slug (URL)"
-        :help="`Si lo dejas vacío queda como /${slugPreview || 'nombre-del-articulo'}. Si ya existe se agrega -2.`"
-        :error="draft.fieldErrors.slug"
-        hint="Opcional"
+        :help="slugHelp"
+        :error="product.fieldErrors.slug"
+        :hint="product.mode === 'create' ? 'Opcional' : undefined"
       >
         <UInput
-          v-model="draft.form.slug"
+          v-model="product.form.slug"
           :placeholder="slugPreview || 'bralette-encaje-aurora'"
           autocomplete="off"
           spellcheck="false"
@@ -58,12 +62,12 @@ const toolbarItems: EditorToolbarItem[][] = [
       <UFormField
         label="Descripción"
         help="Materiales, ajuste y cuidados."
-        :error="draft.fieldErrors.description"
+        :error="product.fieldErrors.description"
         hint="Opcional"
       >
         <UEditor
           v-slot="{ editor }"
-          v-model="draft.form.description"
+          v-model="product.form.description"
           content-type="json"
           :starter-kit="{ blockquote: false, code: false, codeBlock: false, horizontalRule: false, link: false }"
           :image="false"

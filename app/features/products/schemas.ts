@@ -5,7 +5,7 @@ import type { RichTextDoc } from '~/utils/rich-text'
 const numberInput = <T extends z.ZodType>(schema: T, fallback?: number) =>
   z.preprocess(value => (value === '' || value == null ? fallback : Number(value)), schema)
 
-const variantSchema = z.object({
+export const variantSchema = z.object({
   sizeId: z.string({ error: 'Falta la talla.' }).min(1, 'Falta la talla.'),
   colorId: z.string({ error: 'Falta el color.' }).min(1, 'Falta el color.'),
   sku: z
@@ -40,20 +40,25 @@ const variantsSchema = z.array(variantSchema).superRefine((variants, ctx) => {
   })
 })
 
+/** Campos del articulo sin variantes: los comparten el alta y la edicion. */
+const productFields = {
+  name: z.string({ error: 'Escribe el nombre del artículo.' }).trim().min(1, 'Escribe el nombre del artículo.').max(150, 'Máximo 150 caracteres.'),
+  slug: z
+    .string()
+    .trim()
+    .regex(/^$|^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Solo minúsculas, números y guiones (ej. bralette-encaje).')
+    .transform(slug => slug || undefined),
+  // JSON de TipTap tal cual lo emite UEditor; se omite si quedo vacio
+  description: z.custom<RichTextDoc | undefined>().transform(normalizeRichTextDoc),
+  basePrice: numberInput(z.number({ error: 'Escribe el precio base.' }).positive('El precio base debe ser mayor a 0.')),
+  categoryId: z.string({ error: 'Elige una categoría.' }).min(1, 'Elige una categoría.'),
+  taxConfigId: z.string().transform(id => id || null),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
+}
+
 export const productSchema = z
   .object({
-    name: z.string({ error: 'Escribe el nombre del artículo.' }).trim().min(1, 'Escribe el nombre del artículo.').max(150, 'Máximo 150 caracteres.'),
-    slug: z
-      .string()
-      .trim()
-      .regex(/^$|^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Solo minúsculas, números y guiones (ej. bralette-encaje).')
-      .transform(slug => slug || undefined),
-    // JSON de TipTap tal cual lo emite UEditor; se omite si quedo vacio
-    description: z.custom<RichTextDoc | undefined>().transform(normalizeRichTextDoc),
-    basePrice: numberInput(z.number({ error: 'Escribe el precio base.' }).positive('El precio base debe ser mayor a 0.')),
-    categoryId: z.string({ error: 'Elige una categoría.' }).min(1, 'Elige una categoría.'),
-    taxConfigId: z.string().transform(id => id || null),
-    status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
+    ...productFields,
     variants: variantsSchema,
   })
   .superRefine((product, ctx) => {
@@ -84,5 +89,23 @@ export const productFilesSchema = z
     }
   })
 
+/** Edicion de los datos generales (PATCH): las variantes e imagenes se guardan aparte. */
+export const productUpdateSchema = z.object(productFields)
+
+/** Variante existente: el SKU ya no se puede dejar vacio ni el stock se toca aqui (va por Inventario). */
+export const variantUpdateSchema = z.object({
+  sku: z
+    .string()
+    .trim()
+    .min(1, 'Escribe el SKU.')
+    .max(64, 'Máximo 64 caracteres.')
+    .regex(/^[A-Za-z0-9-]+$/, 'Solo letras, números y guiones.')
+    .transform(sku => sku.toUpperCase()),
+  priceAdjustment: variantSchema.shape.priceAdjustment,
+  costPrice: variantSchema.shape.costPrice,
+  active: z.boolean(),
+})
+
 export type ProductPayload = z.output<typeof productSchema>
 export type ProductFiles = z.output<typeof productFilesSchema>
+export type ProductUpdatePayload = z.output<typeof productUpdateSchema>

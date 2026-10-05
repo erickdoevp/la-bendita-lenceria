@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { BadgeProps, TableColumn } from '@nuxt/ui'
+import type { TableColumn } from '@nuxt/ui'
 import { CategorySelect, useCategoriesStore } from '~/features/catalog'
-import { PRODUCT_ROUTES, STATUS_LABELS } from '../constants'
+import { PRODUCT_ROUTES, STATUS_COLORS, STATUS_LABELS } from '../constants'
 import { useProductsListStore } from '../stores/products-list.store'
 import type { ProductListItem, ProductStatus } from '../types'
 
@@ -23,18 +23,13 @@ const statusItems = [
   ...(Object.entries(STATUS_LABELS) as [ProductStatus, string][]).map(([value, label]) => ({ label, value })),
 ]
 
-const statusColors: Record<ProductStatus, BadgeProps['color']> = {
-  PUBLISHED: 'primary',
-  DRAFT: 'neutral',
-  ARCHIVED: 'neutral',
-}
-
 const columns: TableColumn<ProductListItem>[] = [
   { accessorKey: 'name', header: 'Artículo' },
   { id: 'category', header: 'Categoría' },
   { accessorKey: 'basePrice', header: 'Precio base', meta: { class: { th: 'text-right', td: 'text-right' } } },
   { id: 'stock', header: 'Stock', meta: { class: { th: 'text-right', td: 'text-right' } } },
   { accessorKey: 'status', header: 'Estado', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { id: 'actions', header: () => h('span', { class: 'sr-only' }, 'Acciones'), meta: { class: { td: 'w-px py-2' } } },
 ]
 
 onMounted(() => {
@@ -208,8 +203,19 @@ function stock(product: ProductListItem) {
         </template>
         <template #status-cell="{ row }">
           <UBadge
-            :color="statusColors[row.original.status]"
+            :color="STATUS_COLORS[row.original.status]"
             :label="STATUS_LABELS[row.original.status]"
+          />
+        </template>
+        <template #actions-cell="{ row }">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            icon="ph:pencil-simple"
+            :to="PRODUCT_ROUTES.detail(row.original.id)"
+            :aria-label="`Editar ${row.original.name}`"
+            title="Ver y editar"
           />
         </template>
       </UTable>

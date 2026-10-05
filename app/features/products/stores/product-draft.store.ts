@@ -3,23 +3,15 @@ import { getFieldErrors } from '#shared/utils/validation'
 import { useSizesStore } from '~/features/catalog'
 import { productFilesSchema, productSchema } from '../schemas'
 import { useProductsApi } from '../services'
-import type { RichTextDoc } from '~/utils/rich-text'
-import type { ProductDetail, ProductStatus, VariantDraft } from '../types'
+import { emptyProductForm, type ProductFormFields } from '../composables/useProductForm'
+import type { ProductDetail, VariantDraft } from '../types'
 import { buildProductFormData } from '../utils/form-data'
 
 type VariantField = 'sku' | 'priceAdjustment' | 'costPrice' | 'initialStock'
 
 const variantKey = (colorId: string, sizeId: string) => `${colorId}:${sizeId}`
 
-const initialForm = () => ({
-  name: '',
-  slug: '',
-  description: undefined as RichTextDoc | undefined,
-  basePrice: '' as number | string,
-  categoryId: '',
-  taxConfigId: '',
-  status: 'DRAFT' as ProductStatus,
-})
+const initialForm = emptyProductForm
 
 /**
  * Borrador del articulo nuevo. Vive en Pinia para no perderlo si la admin sale
@@ -115,7 +107,7 @@ export const useProductDraftStore = defineStore('product-draft', () => {
     fieldErrors.value = Object.fromEntries(Object.entries(fieldErrors.value).filter(([key]) => !key.startsWith(prefix)))
   }
 
-  for (const field of Object.keys(initialForm()) as (keyof ReturnType<typeof initialForm>)[]) {
+  for (const field of Object.keys(initialForm()) as (keyof ProductFormFields)[]) {
     watch(() => form[field], () => {
       clearError(field)
       if (field === 'status') clearError('variants')

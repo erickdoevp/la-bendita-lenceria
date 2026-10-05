@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { Category } from '~/features/catalog'
 import { CategoryForm, CategorySelect, useCategoriesStore, useTaxesStore } from '~/features/catalog'
-import { useProductDraftStore } from '../stores/product-draft.store'
+import { useProductForm } from '../composables/useProductForm'
 
-const draft = useProductDraftStore()
+const product = useProductForm()
 const categories = useCategoriesStore()
 const taxes = useTaxesStore()
 
@@ -21,7 +21,7 @@ function onCategoryCreated(category: Category) {
   categoryModal.value = false
   // Las inactivas no salen en el arbol, asi que no se pueden asignar todavia
   if (category.active) {
-    draft.form.categoryId = category.id
+    product.form.categoryId = category.id
     inactiveNotice.value = null
   }
   else {
@@ -38,10 +38,10 @@ function onCategoryCreated(category: Category) {
     <div class="grid gap-5 md:grid-cols-2">
       <UFormField
         label="Precio base"
-        :error="draft.fieldErrors.basePrice"
+        :error="product.fieldErrors.basePrice"
       >
         <UInput
-          v-model.number="draft.form.basePrice"
+          v-model.number="product.form.basePrice"
           type="number"
           min="0"
           step="0.01"
@@ -57,7 +57,7 @@ function onCategoryCreated(category: Category) {
       <UFormField
         label="Impuesto"
         help="Por defecto, el IVA global activo."
-        :error="draft.fieldErrors.taxConfigId"
+        :error="product.fieldErrors.taxConfigId"
       >
         <USkeleton
           v-if="taxes.status === 'pending'"
@@ -65,7 +65,7 @@ function onCategoryCreated(category: Category) {
         />
         <USelect
           v-else
-          v-model="draft.form.taxConfigId"
+          v-model="product.form.taxConfigId"
           :items="taxItems"
           :placeholder="taxes.items.length ? 'Elige un impuesto' : 'Sin impuestos configurados'"
           :disabled="!taxes.items.length"
@@ -75,7 +75,7 @@ function onCategoryCreated(category: Category) {
       <UFormField
         label="Categoría"
         class="md:col-span-2"
-        :error="draft.fieldErrors.categoryId"
+        :error="product.fieldErrors.categoryId"
         :help="inactiveNotice ?? undefined"
       >
         <template
@@ -114,7 +114,7 @@ function onCategoryCreated(category: Category) {
         </UEmpty>
         <CategorySelect
           v-else
-          v-model="draft.form.categoryId"
+          v-model="product.form.categoryId"
         />
 
         <p
