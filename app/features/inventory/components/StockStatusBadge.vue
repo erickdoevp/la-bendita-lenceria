@@ -6,16 +6,19 @@ defineProps<{
 </script>
 
 <template>
-  <span
+  <UBadge
     v-if="availableStock <= 0"
-    class="inline-flex rounded-lg bg-danger-soft px-2 py-1 text-xs font-medium text-danger"
-  >Agotado</span>
-  <span
+    color="error"
+    label="Agotado"
+  />
+  <UBadge
     v-else-if="lowStock"
-    class="inline-flex rounded-lg bg-warning-soft px-2 py-1 text-xs font-medium text-warning"
-  >Stock bajo</span>
-  <span
+    color="warning"
+    label="Stock bajo"
+  />
+  <UBadge
     v-else
-    class="inline-flex rounded-lg bg-success-soft px-2 py-1 text-xs font-medium text-success"
-  >En stock</span>
+    color="success"
+    label="En stock"
+  />
 </template>

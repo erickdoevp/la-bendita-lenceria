@@ -1,4 +1,4 @@
-/** Registro en edicion dentro de un UiModal: el modal esta abierto mientras haya uno. */
+/** Registro en edicion dentro de un UModal: el modal esta abierto mientras haya uno. */
 export function useEditModal<T>() {
   const editing = shallowRef<T | null>(null)
   const open = computed({

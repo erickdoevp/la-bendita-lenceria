@@ -21,13 +21,13 @@ function isActive(item: AccountNavItem) {
         <NuxtLink
           :to="item.to"
           :aria-current="isActive(item) ? 'page' : undefined"
-          class="flex h-10 items-center gap-2.5 whitespace-nowrap rounded-xl px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-accent"
-          :class="isActive(item) ? 'bg-accent/10 text-ink' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'"
+          class="flex h-10 items-center gap-2.5 whitespace-nowrap rounded-lg px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary"
+          :class="isActive(item) ? 'bg-primary/10 text-highlighted' : 'text-muted hover:bg-default hover:text-highlighted'"
         >
-          <Icon
+          <UIcon
             :name="item.icon"
             class="size-5 shrink-0"
-            :class="isActive(item) && 'text-accent'"
+            :class="isActive(item) && 'text-primary'"
             aria-hidden="true"
           />
           {{ item.label }}

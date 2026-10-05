@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useLoginForm } from '../composables/useLoginForm'
-import LoginField from './LoginField.vue'
 import TurnstileWidget from './TurnstileWidget.vue'
 
 const emit = defineEmits<{ success: [] }>()
@@ -38,58 +37,49 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <Transition
-      enter-active-class="motion-safe:transition motion-safe:duration-200"
-      enter-from-class="opacity-0 -translate-y-1"
-    >
-      <div
-        v-if="formError"
-        role="alert"
-        class="flex items-start gap-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger"
-      >
-        <Icon
-          name="ph:warning-circle"
-          class="mt-px size-5 shrink-0"
-          aria-hidden="true"
-        />
-        <p>{{ formError }}</p>
-      </div>
-    </Transition>
-
-    <LoginField
-      id="usernameOrEmail"
-      v-model="values.usernameOrEmail"
-      label="Usuario o correo"
-      autocomplete="username"
-      :error="fieldErrors.usernameOrEmail"
-      :disabled="pending"
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
     />
 
-    <LoginField
-      id="password"
-      v-model="values.password"
-      label="Contraseña"
-      :type="showPassword ? 'text' : 'password'"
-      autocomplete="current-password"
-      :error="fieldErrors.password"
-      :disabled="pending"
+    <UFormField
+      label="Usuario o correo"
+      :error="fieldErrors.usernameOrEmail"
     >
-      <template #trailing>
-        <button
-          type="button"
-          class="grid size-9 place-items-center rounded-lg text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
-          :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-          :aria-pressed="showPassword"
-          @click="showPassword = !showPassword"
-        >
-          <Icon
-            :name="showPassword ? 'ph:eye-slash' : 'ph:eye'"
-            class="size-5"
-            aria-hidden="true"
+      <UInput
+        v-model="values.usernameOrEmail"
+        size="lg"
+        autocomplete="username"
+        :disabled="pending"
+      />
+    </UFormField>
+
+    <UFormField
+      label="Contraseña"
+      :error="fieldErrors.password"
+    >
+      <UInput
+        v-model="values.password"
+        size="lg"
+        :type="showPassword ? 'text' : 'password'"
+        autocomplete="current-password"
+        :disabled="pending"
+        :ui="{ trailing: 'pe-1' }"
+      >
+        <template #trailing>
+          <UButton
+            color="neutral"
+            variant="link"
+            :icon="showPassword ? 'ph:eye-slash' : 'ph:eye'"
+            :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            :aria-pressed="showPassword"
+            @click="showPassword = !showPassword"
           />
-        </button>
-      </template>
-    </LoginField>
+        </template>
+      </UInput>
+    </UFormField>
 
     <TurnstileWidget
       v-if="turnstileEnabled"
@@ -100,18 +90,13 @@ async function onSubmit() {
       @error="turnstileToken = null"
     />
 
-    <button
+    <UButton
       type="submit"
-      :disabled="pending"
-      class="mt-1 inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-accent px-5 text-[15px] font-medium text-accent-ink transition-[background-color,transform] duration-200 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:scale-[0.98] disabled:cursor-wait disabled:opacity-70"
-    >
-      <Icon
-        v-if="pending"
-        name="ph:circle-notch"
-        class="size-5 motion-safe:animate-spin"
-        aria-hidden="true"
-      />
-      {{ pending ? 'Entrando' : 'Iniciar sesión' }}
-    </button>
+      size="lg"
+      block
+      class="mt-1"
+      :loading="pending"
+      :label="pending ? 'Entrando' : 'Iniciar sesión'"
+    />
   </form>
 </template>

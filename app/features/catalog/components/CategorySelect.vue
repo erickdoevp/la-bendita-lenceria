@@ -3,10 +3,7 @@ import { useCategoriesStore } from '../stores/categories.store'
 import type { CategoryRef } from '../types'
 import { flattenCategoryTree, withoutBranch } from '../utils/category-tree'
 
-defineOptions({ inheritAttrs: false })
-
 const props = withDefaults(defineProps<{
-  invalid?: boolean
   emptyLabel?: string
   /** Oculta esta categoria y sus hijas (al editar, no puede ser su propio padre). */
   excludeId?: string
@@ -24,25 +21,25 @@ const options = computed(() => {
   return [...list, { id: current.id, name: `${current.name} (inactiva)`, depth: 0, path: current.name }]
 })
 
-const indent = (depth: number) => '   '.repeat(depth)
+// La sangria marca la profundidad en el arbol; '' (sin categoria) se representa con SELECT_ALL
+const items = computed(() => [
+  { label: store.status === 'pending' ? 'Cargando categorías' : props.emptyLabel, value: SELECT_ALL },
+  ...options.value.map(option => ({ label: `${'\u00A0\u00A0\u00A0'.repeat(option.depth)}${option.name}`, value: option.id })),
+])
+
+const selected = computed({
+  get: () => model.value || SELECT_ALL,
+  set: (value: string) => {
+    model.value = value === SELECT_ALL ? '' : value
+  },
+})
 </script>
 
 <template>
-  <UiSelect
-    v-model="model"
-    v-bind="$attrs"
-    :invalid="invalid"
+  <USelect
+    v-model="selected"
+    :items="items"
+    :loading="store.status === 'pending'"
     :disabled="store.status === 'pending'"
-  >
-    <option value="">
-      {{ store.status === 'pending' ? 'Cargando categorías' : emptyLabel }}
-    </option>
-    <option
-      v-for="option in options"
-      :key="option.id"
-      :value="option.id"
-    >
-      {{ indent(option.depth) }}{{ option.name }}
-    </option>
-  </UiSelect>
+  />
 </template>

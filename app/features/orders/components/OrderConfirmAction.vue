@@ -30,30 +30,32 @@ async function onConfirm() {
 
 <template>
   <div class="grid gap-5">
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <p class="text-sm leading-relaxed text-ink">
+    <p class="text-sm leading-relaxed text-highlighted">
       {{ message }}
     </p>
 
     <div class="flex flex-wrap justify-end gap-2">
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
-      <UiButton
-        :variant="variant"
+      />
+      <UButton
+        :color="variant === 'danger' ? 'error' : 'primary'"
         :icon="icon"
         :loading="pending"
+        :label="confirmLabel"
         @click="onConfirm"
-      >
-        {{ confirmLabel }}
-      </UiButton>
+      />
     </div>
   </div>
 </template>

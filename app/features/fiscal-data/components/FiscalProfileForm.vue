@@ -9,7 +9,6 @@ const emit = defineEmits<{ saved: [profile: FiscalProfile], cancel: [] }>()
 
 const store = useFiscalStore()
 const { fieldErrors, formError, validate, applyApiError, clearField } = useFormErrors()
-const uid = useId()
 const pending = ref(false)
 
 const isEdit = computed(() => Boolean(props.profile))
@@ -61,6 +60,8 @@ async function onSubmit() {
     pending.value = false
   }
 }
+
+const regimenItems = REGIMENES_FISCALES.map(regimen => ({ label: `${regimen.value} · ${regimen.label}`, value: regimen.value }))
 </script>
 
 <template>
@@ -69,113 +70,82 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-rfc`"
-      v-slot="field"
+    <UFormField
       label="RFC"
-      :hint="personaHint"
+      :help="personaHint"
       :error="fieldErrors.rfc"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.rfc"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         class="font-mono uppercase"
         maxlength="13"
         autocomplete="off"
         autocapitalize="characters"
         spellcheck="false"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-razon`"
-      v-slot="field"
+    <UFormField
       label="Nombre o razón social"
-      hint="Exactamente como en tu Constancia de Situación Fiscal, sin «S.A. de C.V.»."
+      help="Exactamente como en tu Constancia de Situación Fiscal, sin «S.A. de C.V.»."
       :error="fieldErrors.razonSocial"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.razonSocial"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-regimen`"
-      v-slot="field"
+    <UFormField
       label="Régimen fiscal"
       :error="fieldErrors.regimenFiscal"
     >
-      <UiSelect
-        :id="field.id"
+      <USelect
         v-model="values.regimenFiscal"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
-      >
-        <option
-          value=""
-          disabled
-        >
-          Elige tu régimen
-        </option>
-        <option
-          v-for="regimen in REGIMENES_FISCALES"
-          :key="regimen.value"
-          :value="regimen.value"
-        >
-          {{ regimen.value }} · {{ regimen.label }}
-        </option>
-      </UiSelect>
-    </UiField>
+        :items="regimenItems"
+        placeholder="Elige tu régimen"
+      />
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-cp`"
-      v-slot="field"
+    <UFormField
       label="Código postal fiscal"
-      hint="El de tu domicilio fiscal, no el de entrega."
+      help="El de tu domicilio fiscal, no el de entrega."
       :error="fieldErrors.cp"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.cp"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         class="max-w-40"
         inputmode="numeric"
         maxlength="5"
       />
-    </UiField>
+    </UFormField>
 
-    <UiSwitch
+    <USwitch
       v-if="!isFirst"
-      :id="`${uid}-default`"
       v-model="values.isDefault"
       label="Usar como predeterminado"
       description="Lo proponemos primero al solicitar una factura."
     />
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        {{ isEdit ? 'Guardar cambios' : 'Guardar datos fiscales' }}
-      </UiButton>
-      <UiButton
-        variant="secondary"
+        :label="isEdit ? 'Guardar cambios' : 'Guardar datos fiscales'"
+      />
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

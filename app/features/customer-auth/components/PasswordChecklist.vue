@@ -10,15 +10,15 @@ const rules = computed(() => PASSWORD_RULES.map(rule => ({ label: rule.label, me
   <!-- Requisitos en vivo: el lector de pantalla los lee al enfocar el campo -->
   <ul
     :id="id"
-    class="grid grid-cols-1 gap-x-4 gap-y-1 text-[13px] sm:grid-cols-2"
+    class="grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-2"
   >
     <li
       v-for="rule in rules"
       :key="rule.label"
       class="flex items-center gap-1.5 transition-colors duration-200"
-      :class="rule.met ? 'text-success' : 'text-ink-muted'"
+      :class="rule.met ? 'text-success' : 'text-muted'"
     >
-      <Icon
+      <UIcon
         :name="rule.met ? 'ph:check-circle-fill' : 'ph:circle'"
         class="size-4 shrink-0"
         aria-hidden="true"

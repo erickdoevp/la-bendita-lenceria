@@ -14,19 +14,18 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Colecciones"
       description="Selecciones de artículos para el escaparate. Son independientes de las categorías: un artículo puede estar en varias."
     >
-      <template #actions>
-        <UiButton
+      <template #links>
+        <UButton
           icon="ph:plus"
           :to="COLLECTION_ROUTES.create"
-        >
-          Nueva colección
-        </UiButton>
+          label="Nueva colección"
+        />
       </template>
-    </UiPageHeader>
+    </UPageHeader>
     <CollectionsManager />
   </div>
 </template>

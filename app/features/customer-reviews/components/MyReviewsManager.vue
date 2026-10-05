@@ -43,42 +43,39 @@ async function onRemove(review: Review) {
 
 <template>
   <div class="grid gap-6">
-    <UiPageHeader
+    <UPageHeader
       title="Mis reseñas"
       description="Lo que opinaste de tus prendas. Las reseñas nuevas o editadas se publican después de revisarlas."
     />
 
-    <UiAlert v-if="actionError || store.error">
-      {{ actionError ?? store.error }}
-      <button
-        v-if="store.error"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="store.load()"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
-    <UiAlert
+    <UAlert
+      v-if="actionError || store.error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="actionError ?? store.error ?? undefined"
+      :actions="store.error ? retryAction(() => store.load()) : undefined"
+      orientation="horizontal"
+    />
+    <UAlert
       v-if="notice"
-      tone="info"
-    >
-      {{ notice }}
-    </UiAlert>
+      color="primary"
+      icon="ph:info"
+      :title="notice"
+    />
 
-    <UiPanel>
+    <UCard>
       <div
         v-if="store.pending && !store.loaded"
         class="grid gap-4"
       >
-        <UiSkeleton
+        <USkeleton
           v-for="n in 3"
           :key="n"
           class="h-24"
         />
       </div>
 
-      <UiEmptyState
+      <UEmpty
         v-else-if="store.loaded && !store.items.length"
         icon="ph:chat-centered-text"
         title="Aún no has escrito reseñas"
@@ -87,7 +84,7 @@ async function onRemove(review: Review) {
 
       <ul
         v-else
-        class="-my-5 divide-y divide-line sm:-my-6"
+        class="-my-5 divide-y divide-default sm:-my-6"
       >
         <li
           v-for="review in store.items"
@@ -102,19 +99,22 @@ async function onRemove(review: Review) {
           />
         </li>
       </ul>
-    </UiPanel>
+    </UCard>
 
-    <UiModal
+    <UModal
       v-model:open="modalOpen"
       :title="editing ? `Editar reseña de ${editing.productName}` : 'Editar reseña'"
     >
-      <MyReviewForm
-        v-if="editing"
-        :key="editing.id"
-        :review="editing"
-        @saved="onSaved"
-        @cancel="modalOpen = false"
-      />
-    </UiModal>
+      <template #body>
+        <MyReviewForm
+          v-if="editing"
+          :key="editing.id"
+          :review="editing"
+          @saved="onSaved"
+          @cancel="modalOpen = false"
+        />
+    
+      </template>
+    </UModal>
   </div>
 </template>

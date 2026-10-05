@@ -9,7 +9,6 @@ const emit = defineEmits<{ saved: [address: Address], cancel: [] }>()
 
 const store = useAddressesStore()
 const { fieldErrors, formError, validate, applyApiError, clearField } = useFormErrors()
-const uid = useId()
 const pending = ref(false)
 
 const isEdit = computed(() => Boolean(props.address))
@@ -74,205 +73,156 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-alias`"
-      v-slot="field"
+    <UFormField
       label="Nombre de la dirección"
       :error="fieldErrors.alias"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.alias"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Casa, Oficina…"
         maxlength="50"
       />
-    </UiField>
+    </UFormField>
 
     <div class="grid gap-5 sm:grid-cols-2 sm:gap-4">
-      <UiField
-        :id="`${uid}-recipient`"
-        v-slot="field"
+      <UFormField
         label="Quién recibe"
         :error="fieldErrors.recipientName"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.recipientName"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autocomplete="name"
         />
-      </UiField>
-      <UiField
-        :id="`${uid}-phone`"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Teléfono"
         :error="fieldErrors.phone"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.phone"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           type="tel"
           inputmode="tel"
           autocomplete="tel-national"
         />
-      </UiField>
+      </UFormField>
     </div>
 
-    <UiField
-      :id="`${uid}-cp`"
-      v-slot="field"
+    <UFormField
       label="Código postal"
-      :hint="cpHint"
+      :help="cpHint"
       :error="fieldErrors.cp"
     >
       <div class="relative max-w-40">
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.cp"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           inputmode="numeric"
           autocomplete="postal-code"
           maxlength="5"
         />
-        <Icon
+        <UIcon
           v-if="cpStatus === 'pending'"
           name="ph:circle-notch"
-          class="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-muted motion-safe:animate-spin"
+          class="absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted motion-safe:animate-spin"
           aria-hidden="true"
         />
       </div>
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-street`"
-      v-slot="field"
+    <UFormField
       label="Calle"
       :error="fieldErrors.street"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.street"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         autocomplete="address-line1"
       />
-    </UiField>
+    </UFormField>
 
     <div class="grid grid-cols-2 gap-4">
-      <UiField
-        :id="`${uid}-ext`"
-        v-slot="field"
+      <UFormField
         label="Número exterior"
         :error="fieldErrors.exteriorNumber"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.exteriorNumber"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
         />
-      </UiField>
-      <UiField
-        :id="`${uid}-int`"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Interior"
-        optional
         :error="fieldErrors.interiorNumber"
+        hint="Opcional"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.interiorNumber"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autocomplete="address-line2"
         />
-      </UiField>
+      </UFormField>
     </div>
 
-    <UiField
-      :id="`${uid}-colonia`"
-      v-slot="field"
+    <UFormField
       label="Colonia"
       :error="fieldErrors.colonia"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.colonia"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         autocomplete="address-level3"
       />
-    </UiField>
+    </UFormField>
 
     <div class="grid gap-5 sm:grid-cols-2 sm:gap-4">
-      <UiField
-        :id="`${uid}-municipio`"
-        v-slot="field"
+      <UFormField
         label="Municipio o alcaldía"
         :error="fieldErrors.municipio"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.municipio"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autocomplete="address-level2"
         />
-      </UiField>
-      <UiField
-        :id="`${uid}-estado`"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Estado"
         :error="fieldErrors.estado"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.estado"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autocomplete="address-level1"
         />
-      </UiField>
+      </UFormField>
     </div>
 
-    <UiSwitch
+    <USwitch
       v-if="!isFirst"
-      :id="`${uid}-default`"
       v-model="values.isDefault"
       label="Usar como predeterminada"
       description="Es la que proponemos primero en el checkout."
     />
     <p
       v-else
-      class="text-[13px] text-ink-muted"
+      class="text-sm text-muted"
     >
       Al ser tu primera dirección, quedará como predeterminada.
     </p>
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        {{ isEdit ? 'Guardar cambios' : 'Guardar dirección' }}
-      </UiButton>
-      <UiButton
-        variant="secondary"
+        :label="isEdit ? 'Guardar cambios' : 'Guardar dirección'"
+      />
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

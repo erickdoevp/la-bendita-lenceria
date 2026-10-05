@@ -13,9 +13,9 @@ withDefaults(defineProps<{ rows?: number }>(), { rows: 5 })
       :key="row"
       class="flex items-center gap-4"
     >
-      <UiSkeleton class="size-8 rounded-full" />
-      <UiSkeleton class="h-4 flex-1" />
-      <UiSkeleton class="h-4 w-16" />
+      <USkeleton class="size-8 rounded-full" />
+      <USkeleton class="h-4 flex-1" />
+      <USkeleton class="h-4 w-16" />
     </div>
   </div>
 </template>

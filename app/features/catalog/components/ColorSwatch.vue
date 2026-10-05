@@ -7,7 +7,7 @@ withDefaults(defineProps<{
 
 <template>
   <span
-    class="inline-block shrink-0 rounded-full shadow-[inset_0_0_0_1px_rgb(24_24_27/0.18)]"
+    class="inline-block shrink-0 rounded-full ring-1 ring-inset ring-(--ui-border-accented)"
     :class="size === 'sm' ? 'size-4' : 'size-6'"
     :style="{ backgroundColor: hex }"
     aria-hidden="true"

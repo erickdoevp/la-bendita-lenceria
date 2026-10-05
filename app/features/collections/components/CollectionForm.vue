@@ -12,7 +12,6 @@ const api = useCollectionsApi()
 const store = useCollectionsStore()
 const { fieldErrors, formError, validate, applyApiError, clearField, reset } = useFormErrors()
 const pending = ref(false)
-const uid = useId()
 const isEdit = computed(() => Boolean(props.collection))
 
 const initialValues = () => ({
@@ -98,94 +97,78 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-name`"
-      v-slot="field"
+    <UFormField
       label="Nombre"
       :error="fieldErrors.name"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.name"
         maxlength="120"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Verano 2026"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
     <div class="grid gap-2">
-      <UiField
-        :id="`${uid}-slug`"
-        v-slot="field"
+      <UFormField
         label="Slug (URL)"
-        :optional="!isEdit"
-        :hint="slugChanged
+        :hint="(!isEdit) ? 'Opcional' : undefined"
+        :help="slugChanged
           ? `Quedará como ${STORE_COLLECTION_PATH}/${slugPreview}. Cambiar la URL rompe los enlaces viejos.`
           : `${STORE_COLLECTION_PATH}/${slugPreview || 'nombre-de-la-coleccion'}. Si ya existe se agrega -2.`"
         :error="fieldErrors.slug"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.slug"
           class="font-mono text-sm"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           :placeholder="nameSlug || 'verano-2026'"
           autocomplete="off"
           spellcheck="false"
         />
-      </UiField>
-      <button
+      </UFormField>
+      <UButton
         v-if="suggestSlug"
-        type="button"
-        class="inline-flex items-center gap-1 justify-self-start text-[13px] text-accent hover:underline"
+        variant="link"
+        size="xs"
+        icon="ph:link"
+        :label="`Actualizar también la URL a /${nameSlug}`"
+        class="justify-self-start px-0"
         @click="values.slug = nameSlug"
-      >
-        <Icon
-          name="ph:link"
-          class="size-3.5"
-          aria-hidden="true"
-        />
-        Actualizar también la URL a /{{ nameSlug }}
-      </button>
+      />
     </div>
 
-    <UiField
-      :id="`${uid}-description`"
-      v-slot="field"
+    <UFormField
       label="Descripción"
-      optional
-      hint="Se muestra en la página de la colección. Separa párrafos con una línea en blanco."
+      help="Se muestra en la página de la colección. Separa párrafos con una línea en blanco."
       :error="fieldErrors.description"
+      hint="Opcional"
     >
-      <UiTextarea
-        :id="field.id"
+      <UTextarea
         v-model="values.description"
-        :aria-describedby="field.describedBy"
-        rows="4"
+        :rows="4"
+        autoresize
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-image`"
+    <UFormField
       :label="collection?.imageUrl ? 'Reemplazar portada' : 'Portada'"
-      optional
+      hint="Opcional"
     >
       <div class="grid gap-3">
         <img
           v-if="collection?.imageUrl && !values.images.length"
           :src="collection.imageUrl"
           :alt="`Portada de ${collection.name}`"
-          class="aspect-[16/7] w-full rounded-xl border border-line object-cover"
+          class="aspect-[16/7] w-full rounded-lg border border-default object-cover"
         >
-        <UiImagePicker
-          :id="`${uid}-image`"
+        <ImagePicker
           v-model="values.images"
           :label="collection?.imageUrl ? 'Elegir otra imagen' : 'Elegir imagen de portada'"
           :error="fieldErrors.image"
@@ -193,35 +176,33 @@ async function onSubmit() {
         />
         <p
           v-if="collection?.imageUrl"
-          class="text-[13px] text-ink-muted"
+          class="text-sm text-muted"
         >
           La portada se puede reemplazar, pero no quitar.
         </p>
       </div>
-    </UiField>
+    </UFormField>
 
-    <UiSwitch
-      :id="`${uid}-active`"
+    <USwitch
       v-model="values.active"
       label="Visible en la tienda"
       description="Apagada, solo la ves tú en el panel."
     />
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
         :icon="isEdit ? 'ph:floppy-disk' : 'ph:plus'"
-      >
-        {{ isEdit ? 'Guardar cambios' : 'Crear colección' }}
-      </UiButton>
-      <UiButton
-        variant="secondary"
+        :label="isEdit ? 'Guardar cambios' : 'Crear colección'"
+      />
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

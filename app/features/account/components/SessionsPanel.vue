@@ -33,61 +33,64 @@ async function logoutAll() {
 
 <template>
   <div class="grid gap-4">
-    <UiAlert v-if="error">
-      {{ error }}
-    </UiAlert>
+    <UAlert
+      v-if="error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="error"
+    />
 
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <p class="text-sm text-ink-muted">
+      <p class="text-sm text-muted">
         Cierra la sesión solo en este navegador.
       </p>
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         size="sm"
         icon="ph:sign-out"
         :loading="pending === 'one'"
         :disabled="pending === 'all'"
+        label="Cerrar sesión"
         @click="logout"
-      >
-        Cerrar sesión
-      </UiButton>
+      />
     </div>
 
-    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-      <p class="max-w-[46ch] text-sm text-ink-muted">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-default pt-4">
+      <p class="max-w-[46ch] text-sm text-muted">
         ¿Entraste desde un equipo que no es tuyo? Cierra la sesión en todos tus dispositivos a la vez.
       </p>
       <div
         v-if="confirmingAll"
         class="flex gap-1.5"
       >
-        <UiButton
-          variant="danger"
+        <UButton
+          color="error"
+          variant="soft"
           size="sm"
           :loading="pending === 'all'"
+          label="Sí, cerrar todas"
           @click="logoutAll"
-        >
-          Sí, cerrar todas
-        </UiButton>
-        <UiButton
+        />
+        <UButton
+          color="neutral"
           variant="ghost"
           size="sm"
           :disabled="pending === 'all'"
+          label="No"
           @click="confirmingAll = false"
-        >
-          No
-        </UiButton>
+        />
       </div>
-      <UiButton
+      <UButton
         v-else
+        color="neutral"
         variant="ghost"
         size="sm"
         icon="ph:devices"
         :disabled="pending === 'one'"
+        label="Cerrar en todos"
         @click="confirmingAll = true"
-      >
-        Cerrar en todos
-      </UiButton>
+      />
     </div>
   </div>
 </template>

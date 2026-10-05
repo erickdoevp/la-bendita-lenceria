@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
 import { useCategoriesStore } from '../stores/categories.store'
 import type { Category } from '../types'
 import { useEditModal } from '../utils/edit-modal'
@@ -12,6 +13,23 @@ const page = computed(() => store.list.data)
 const items = computed(() => page.value?.items ?? [])
 const filtered = computed(() => Boolean(store.list.filters.name || store.list.filters.active))
 
+const search = useSearchTerm(() => store.list.filters.name, (value) => {
+  store.list.filters.name = value
+})
+const active = useSelectAll(store.list.filters, 'active')
+const activeItems = [
+  { label: 'Todas', value: SELECT_ALL },
+  { label: 'Activas', value: 'true' },
+  { label: 'Inactivas', value: 'false' },
+]
+
+const columns: TableColumn<Category>[] = [
+  { accessorKey: 'name', header: 'Categoría' },
+  { id: 'parent', header: 'Padre' },
+  { accessorKey: 'active', header: 'Estado', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { id: 'actions', header: () => h('span', { class: 'sr-only' }, 'Acciones'), meta: { class: { td: 'w-px py-2' } } },
+]
+
 onMounted(() => store.list.load())
 
 watch(() => [store.list.filters.name, store.list.filters.active], () => store.list.load(0))
@@ -19,158 +37,120 @@ watch(() => [store.list.filters.name, store.list.filters.active], () => store.li
 
 <template>
   <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
-    <UiPanel>
+    <UCard>
       <div class="grid gap-5">
         <div class="flex flex-col gap-3 sm:flex-row">
-          <UiSearch
-            id="categories-search"
-            v-model="store.list.filters.name"
-            label="Buscar categoría"
+          <UInput
+            v-model="search"
+            type="search"
+            icon="ph:magnifying-glass"
+            placeholder="Buscar categoría"
+            aria-label="Buscar categoría"
+            class="flex-1"
           />
-          <label
-            for="categories-active"
-            class="sr-only"
-          >Estado</label>
-          <UiSelect
-            id="categories-active"
-            v-model="store.list.filters.active"
-            class="sm:w-40 [&_select]:h-10 [&_select]:text-sm"
-          >
-            <option value="">
-              Todas
-            </option>
-            <option value="true">
-              Activas
-            </option>
-            <option value="false">
-              Inactivas
-            </option>
-          </UiSelect>
+          <USelect
+            v-model="active"
+            :items="activeItems"
+            aria-label="Estado"
+            class="sm:w-40"
+          />
         </div>
 
-        <UiAlert v-if="store.list.error">
-          {{ store.list.error }}
-          <button
-            type="button"
-            class="ml-1 font-medium underline underline-offset-2"
-            @click="store.list.load()"
-          >
-            Reintentar
-          </button>
-        </UiAlert>
+        <UAlert
+          v-if="store.list.error"
+          color="error"
+          icon="ph:warning-circle"
+          :title="store.list.error"
+          :actions="retryAction(store.list.load)"
+          orientation="horizontal"
+        />
 
         <CatalogTableSkeleton v-if="store.list.pending && !page" />
 
-        <UiEmptyState
+        <UEmpty
           v-else-if="page && !items.length"
           icon="ph:tree-structure"
           :title="filtered ? 'Sin resultados' : 'Aún no hay categorías'"
           :description="filtered ? 'Prueba con otros filtros.' : 'Todo artículo necesita una categoría. Crea la primera con el formulario.'"
         />
 
-        <div
+        <UTable
           v-else-if="items.length"
-          class="-mx-5 overflow-x-auto sm:-mx-6"
+          :data="items"
+          :columns="columns"
+          :class="['-mx-4 sm:-mx-6 transition-opacity', store.list.pending && 'opacity-60']"
         >
-          <table class="w-full text-left text-sm">
-            <thead class="text-ink-muted">
-              <tr>
-                <th class="px-5 pb-3 font-medium sm:px-6">
-                  Categoría
-                </th>
-                <th class="pb-3 font-medium">
-                  Padre
-                </th>
-                <th class="pb-3 text-right font-medium">
-                  Estado
-                </th>
-                <th class="px-5 pb-3 sm:px-6">
-                  <span class="sr-only">Acciones</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="divide-y divide-line border-t border-line transition-opacity"
-              :class="store.list.pending && 'opacity-60'"
-            >
-              <tr
-                v-for="category in items"
-                :key="category.id"
+          <template #name-cell="{ row }">
+            <div class="flex items-center gap-3">
+              <img
+                v-if="row.original.imageUrl"
+                :src="row.original.imageUrl"
+                alt=""
+                loading="lazy"
+                class="size-10 shrink-0 rounded-lg border border-default object-cover"
               >
-                <td class="px-5 py-3 sm:px-6">
-                  <div class="flex items-center gap-3">
-                    <img
-                      v-if="category.imageUrl"
-                      :src="category.imageUrl"
-                      alt=""
-                      loading="lazy"
-                      class="size-10 shrink-0 rounded-xl border border-line object-cover"
-                    >
-                    <span
-                      v-else
-                      class="grid size-10 shrink-0 place-items-center rounded-xl bg-surface text-ink-muted"
-                    >
-                      <Icon
-                        name="ph:image"
-                        class="size-4"
-                        aria-hidden="true"
-                      />
-                    </span>
-                    <span class="grid min-w-0">
-                      <span class="truncate font-medium text-ink">{{ category.name }}</span>
-                      <span class="truncate font-mono text-xs text-ink-muted">{{ category.slug }}</span>
-                    </span>
-                  </div>
-                </td>
-                <td class="py-3 text-ink-muted">
-                  {{ category.parent?.name ?? 'Raíz' }}
-                </td>
-                <td class="py-3 text-right">
-                  <span :class="category.active ? 'text-ink' : 'text-ink-muted'">
-                    {{ category.active ? 'Activa' : 'Inactiva' }}
-                  </span>
-                </td>
-                <td class="w-px px-5 py-2 sm:px-6">
-                  <CatalogRowActions
-                    :name="category.name"
-                    :deletable="false"
-                    @edit="editing = category"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+              <span
+                v-else
+                class="grid size-10 shrink-0 place-items-center rounded-lg bg-elevated text-muted"
+              >
+                <UIcon
+                  name="ph:image"
+                  class="size-4"
+                />
+              </span>
+              <span class="grid min-w-0">
+                <span class="truncate font-medium text-highlighted">{{ row.original.name }}</span>
+                <span class="truncate font-mono text-xs">{{ row.original.slug }}</span>
+              </span>
+            </div>
+          </template>
+          <template #parent-cell="{ row }">
+            {{ row.original.parent?.name ?? 'Raíz' }}
+          </template>
+          <template #active-cell="{ row }">
+            <UBadge
+              :color="row.original.active ? 'success' : 'neutral'"
+              :label="row.original.active ? 'Activa' : 'Inactiva'"
+            />
+          </template>
+          <template #actions-cell="{ row }">
+            <CatalogRowActions
+              :name="row.original.name"
+              :deletable="false"
+              @edit="editing = row.original"
+            />
+          </template>
+        </UTable>
 
-        <UiPagination
+        <PagePagination
           v-if="page"
-          :page="page.page"
-          :total-pages="page.totalPages"
-          :total-elements="page.totalElements"
+          :page="page"
           :disabled="store.list.pending"
           @change="store.list.load"
         />
       </div>
-    </UiPanel>
+    </UCard>
 
-    <UiPanel
+    <UCard
       class="lg:sticky lg:top-6"
       title="Nueva categoría"
       description="Puede colgar de otra para formar subcategorías."
     >
       <CategoryForm />
-    </UiPanel>
+    </UCard>
 
-    <UiModal
+    <UModal
       v-model:open="editOpen"
       :title="`Editar categoría ${editing?.name ?? ''}`"
       description="Los cambios se reflejan en la tienda y en el selector de artículos."
     >
-      <CategoryForm
-        :category="editing"
-        @saved="editing = null"
-        @cancel="editing = null"
-      />
-    </UiModal>
+      <template #body>
+        <CategoryForm
+          :category="editing"
+          @saved="editing = null"
+          @cancel="editing = null"
+        />
+      </template>
+    </UModal>
   </div>
 </template>

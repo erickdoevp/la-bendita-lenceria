@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Movimientos"
       description="Kardex de todo el inventario. Solo aparecen ventas pagadas: un pedido sin pagar aparta stock pero no lo mueve."
     />

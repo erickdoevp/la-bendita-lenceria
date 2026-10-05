@@ -11,11 +11,11 @@ withDefaults(defineProps<{
     role="img"
     :aria-label="`${rating} de 5 estrellas`"
   >
-    <Icon
+    <UIcon
       v-for="star in 5"
       :key="star"
       :name="star <= Math.round(rating) ? 'ph:star-fill' : 'ph:star'"
-      :class="[size === 'sm' ? 'size-4' : 'size-5', star <= Math.round(rating) ? 'text-warning' : 'text-line']"
+      :class="[size === 'sm' ? 'size-4' : 'size-5', star <= Math.round(rating) ? 'text-warning' : 'text-dimmed']"
       aria-hidden="true"
     />
   </span>

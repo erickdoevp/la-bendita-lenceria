@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
 import { ColorSwatch } from '~/features/catalog'
 import { STATUS_LABELS } from '../constants'
 import type { ProductDetail } from '../types'
@@ -18,13 +19,22 @@ const primaryImage = computed(() =>
   ?? props.product.variants.find(v => v.imageUrl)?.imageUrl
   ?? null,
 )
+
+type Variant = ProductDetail['variants'][number]
+
+const columns: TableColumn<Variant>[] = [
+  { id: 'variant', header: 'Variante' },
+  { accessorKey: 'sku', header: 'SKU' },
+  { id: 'price', header: 'Precio', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { accessorKey: 'availableStock', header: 'Stock', meta: { class: { th: 'text-right', td: 'text-right' } } },
+]
 </script>
 
 <template>
   <div class="grid gap-6">
-    <UiPanel>
+    <UCard>
       <div class="grid gap-6 sm:grid-cols-[8rem_minmax(0,1fr)]">
-        <div class="aspect-[4/5] w-32 overflow-hidden rounded-xl border border-line bg-surface">
+        <div class="aspect-[4/5] w-32 overflow-hidden rounded-lg border border-default bg-muted">
           <img
             v-if="primaryImage"
             :src="primaryImage"
@@ -33,9 +43,9 @@ const primaryImage = computed(() =>
           >
           <div
             v-else
-            class="grid size-full place-items-center text-ink-muted"
+            class="grid size-full place-items-center text-muted"
           >
-            <Icon
+            <UIcon
               name="ph:image"
               class="size-6"
               aria-hidden="true"
@@ -44,8 +54,8 @@ const primaryImage = computed(() =>
         </div>
 
         <div class="grid content-start gap-4">
-          <p class="flex items-center gap-2 text-sm font-medium text-accent">
-            <Icon
+          <p class="flex items-center gap-2 text-sm font-medium text-primary">
+            <UIcon
               name="ph:check-circle-fill"
               class="size-5"
               aria-hidden="true"
@@ -55,109 +65,87 @@ const primaryImage = computed(() =>
           <h2
             ref="heading"
             tabindex="-1"
-            class="text-2xl font-semibold tracking-tight text-ink outline-none"
+            class="text-2xl font-semibold tracking-tight text-highlighted outline-none"
           >
             {{ product.name }}
           </h2>
           <dl class="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-4">
             <div class="grid gap-0.5">
-              <dt class="text-ink-muted">
+              <dt class="text-muted">
                 Estado
               </dt>
-              <dd class="text-ink">
+              <dd class="text-highlighted">
                 {{ STATUS_LABELS[product.status] }}
               </dd>
             </div>
             <div class="grid gap-0.5">
-              <dt class="text-ink-muted">
+              <dt class="text-muted">
                 Categoría
               </dt>
-              <dd class="text-ink">
+              <dd class="text-highlighted">
                 {{ product.category.name }}
               </dd>
             </div>
             <div class="grid gap-0.5">
-              <dt class="text-ink-muted">
+              <dt class="text-muted">
                 Precio base
               </dt>
-              <dd class="tabular-nums text-ink">
+              <dd class="tabular-nums text-highlighted">
                 {{ formatMoney(product.basePrice) }}
               </dd>
             </div>
             <div class="grid gap-0.5">
-              <dt class="text-ink-muted">
+              <dt class="text-muted">
                 Impuesto
               </dt>
-              <dd class="text-ink">
+              <dd class="text-highlighted">
                 {{ product.taxName ?? 'IVA global' }}
               </dd>
             </div>
           </dl>
-          <p class="font-mono text-[13px] text-ink-muted">
+          <p class="font-mono text-sm text-muted">
             /{{ product.slug }}
           </p>
         </div>
       </div>
-    </UiPanel>
+    </UCard>
 
-    <UiPanel
+    <UCard
       v-if="variants.length"
       :title="`${variants.length} ${variants.length === 1 ? 'variante' : 'variantes'}`"
     >
-      <div class="-mx-5 overflow-x-auto sm:-mx-6">
-        <table class="w-full text-left text-sm">
-          <thead class="text-ink-muted">
-            <tr>
-              <th class="px-5 pb-3 font-medium sm:px-6">
-                Variante
-              </th>
-              <th class="pb-3 font-medium">
-                SKU
-              </th>
-              <th class="pb-3 text-right font-medium">
-                Precio
-              </th>
-              <th class="px-5 pb-3 text-right font-medium sm:px-6">
-                Stock
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-line border-t border-line">
-            <tr
-              v-for="variant in variants"
-              :key="variant.id"
-            >
-              <td class="px-5 py-3 sm:px-6">
-                <span class="flex items-center gap-2.5 text-ink">
-                  <ColorSwatch
-                    :hex="variant.color.hex"
-                    size="sm"
-                  />
-                  {{ variant.color.name }} {{ variant.size.name }}
-                </span>
-              </td>
-              <td class="whitespace-nowrap py-3 font-mono text-[13px] text-ink">
-                {{ variant.sku }}
-              </td>
-              <td class="py-3 text-right tabular-nums text-ink">
-                {{ formatMoney(product.basePrice + variant.priceAdjustment) }}
-              </td>
-              <td class="px-5 py-3 text-right tabular-nums text-ink sm:px-6">
-                {{ variant.availableStock }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </UiPanel>
+      <UTable
+        :data="variants"
+        :columns="columns"
+        class="-mx-4 sm:-mx-6"
+      >
+        <template #variant-cell="{ row }">
+          <span class="flex items-center gap-2.5 text-highlighted">
+            <ColorSwatch
+              :hex="row.original.color.hex"
+              size="sm"
+            />
+            {{ row.original.color.name }} {{ row.original.size.name }}
+          </span>
+        </template>
+        <template #sku-cell="{ row }">
+          <span class="font-mono text-highlighted">{{ row.original.sku }}</span>
+        </template>
+        <template #price-cell="{ row }">
+          <span class="tabular-nums text-highlighted">{{ formatMoney(product.basePrice + row.original.priceAdjustment) }}</span>
+        </template>
+        <template #availableStock-cell="{ row }">
+          <span class="tabular-nums text-highlighted">{{ row.original.availableStock }}</span>
+        </template>
+      </UTable>
+    </UCard>
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         icon="ph:plus"
+        label="Crear otro artículo"
         @click="emit('createAnother')"
-      >
-        Crear otro artículo
-      </UiButton>
+      />
     </div>
   </div>
 </template>

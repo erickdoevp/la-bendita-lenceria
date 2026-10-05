@@ -19,7 +19,7 @@ function onSaved(coupon: Coupon) {
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Nuevo cupón"
       description="El resumen de la derecha se actualiza mientras llenas el formulario."
     />

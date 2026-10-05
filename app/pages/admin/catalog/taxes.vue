@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Impuestos"
       description="Solo un IVA puede estar activo como global a la vez."
     />

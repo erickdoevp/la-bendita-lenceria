@@ -13,47 +13,48 @@ onMounted(() => list.load(page.value?.page ?? 0))
 
 <template>
   <div class="grid gap-6">
-    <UiPageHeader
+    <UPageHeader
       title="Mis pedidos"
       description="Revisa el estado de tus compras, paga lo pendiente o solicita tu factura."
     />
 
-    <UiAlert v-if="list.error">
-      {{ list.error }}
-      <button
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="list.load()"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="list.error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="list.error"
+      :actions="retryAction(() => list.load())"
+      orientation="horizontal"
+    />
 
     <div
       v-if="list.pending && !page"
       class="grid gap-3"
     >
-      <UiSkeleton
+      <USkeleton
         v-for="n in 3"
         :key="n"
-        class="h-36 rounded-2xl"
+        class="h-36 rounded-lg"
       />
     </div>
 
-    <UiEmptyState
+    <UEmpty
       v-else-if="page && !items.length"
       icon="ph:package"
       title="Aún no tienes pedidos"
       description="Cuando compres algo, aquí podrás seguir tu pedido."
     >
-      <UiButton
-        to="/"
-        variant="secondary"
-        icon="ph:storefront"
-      >
-        Ir a la tienda
-      </UiButton>
-    </UiEmptyState>
+      <template #actions>
+        <UButton
+          color="neutral"
+          variant="outline"
+          to="/"
+          icon="ph:storefront"
+          label="Ir a la tienda"
+        />
+    
+      </template>
+    </UEmpty>
 
     <ul
       v-else
@@ -68,11 +69,9 @@ onMounted(() => list.load(page.value?.page ?? 0))
       </li>
     </ul>
 
-    <UiPagination
+    <PagePagination
       v-if="page"
-      :page="page.page"
-      :total-pages="page.totalPages"
-      :total-elements="page.totalElements"
+      :page="page"
       :disabled="list.pending"
       @change="list.load"
     />

@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS_CLASSES, PAYMENT_STATUS_LABELS } from '~/features/orders'
+import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from '~/features/orders'
 import type { Payment } from '~/features/orders'
 
 defineProps<{ payment: Payment | null }>()
 </script>
 
 <template>
-  <UiPanel title="Pago">
+  <UCard
+    title="Pago"
+  >
     <p
       v-if="!payment"
-      class="text-sm text-ink-muted"
+      class="text-sm text-muted"
     >
       Aún no has iniciado el pago de este pedido.
     </p>
@@ -18,21 +20,21 @@ defineProps<{ payment: Payment | null }>()
       class="grid gap-3 text-sm"
     >
       <div class="flex items-center justify-between gap-3">
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Estado
         </dt>
         <dd>
-          <span
-            class="inline-flex rounded-lg px-2 py-1 text-xs font-medium"
-            :class="PAYMENT_STATUS_CLASSES[payment.status] ?? 'bg-surface text-ink'"
-          >{{ PAYMENT_STATUS_LABELS[payment.status] ?? payment.status }}</span>
+          <UBadge
+            :color="PAYMENT_STATUS_COLORS[payment.status] ?? 'neutral'"
+            :label="PAYMENT_STATUS_LABELS[payment.status] ?? payment.status"
+          />
         </dd>
       </div>
       <div class="flex justify-between gap-3">
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Método
         </dt>
-        <dd class="text-ink">
+        <dd class="text-highlighted">
           {{ PAYMENT_METHOD_LABELS[payment.method] ?? payment.method }}
         </dd>
       </div>
@@ -40,10 +42,10 @@ defineProps<{ payment: Payment | null }>()
         v-if="payment.paidAt"
         class="flex justify-between gap-3"
       >
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Pagado el
         </dt>
-        <dd class="text-ink">
+        <dd class="text-highlighted">
           {{ formatDateTime(payment.paidAt) }}
         </dd>
       </div>
@@ -51,19 +53,19 @@ defineProps<{ payment: Payment | null }>()
         v-if="payment.refundedAmount > 0"
         class="flex justify-between gap-3"
       >
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Reembolsado
         </dt>
-        <dd class="tabular-nums text-ink">
+        <dd class="tabular-nums text-highlighted">
           {{ formatMoney(payment.refundedAmount) }}
         </dd>
       </div>
       <p
         v-if="payment.status === 'FAILED' && payment.failureMessage"
-        class="rounded-xl bg-danger-soft px-3.5 py-2.5 text-danger"
+        class="rounded-lg bg-error/10 px-3.5 py-2.5 text-error"
       >
         {{ payment.failureMessage }}
       </p>
     </dl>
-  </UiPanel>
+  </UCard>
 </template>

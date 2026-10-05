@@ -19,7 +19,7 @@ const loginTo = computed(() => ({
     <NuxtLink
       v-if="auth.isAuthenticated && auth.user"
       :to="CUSTOMER_AUTH_ROUTES.account"
-      class="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-sm font-medium text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+      class="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-sm font-medium text-highlighted transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"
     >
       <CustomerAvatar :user="auth.user" />
       <span class="max-w-[12ch] truncate">Hola, {{ auth.user.name }}</span>
@@ -27,9 +27,9 @@ const loginTo = computed(() => ({
     <NuxtLink
       v-else-if="auth.initialized"
       :to="loginTo"
-      class="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+      class="inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-highlighted transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"
     >
-      <Icon
+      <UIcon
         name="ph:user-circle"
         class="size-5"
         aria-hidden="true"

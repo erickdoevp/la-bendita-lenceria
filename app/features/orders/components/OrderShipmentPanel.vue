@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { BadgeProps } from '@nuxt/ui'
 import { SHIPMENT_STATUS_LABELS } from '../constants'
 import type { Shipment } from '../types'
 
@@ -7,25 +8,30 @@ defineProps<{
   error?: string | null
 }>()
 
-const statusClasses: Record<Shipment['status'], string> = {
-  PENDING: 'bg-surface text-ink',
-  IN_TRANSIT: 'bg-accent/10 text-accent',
-  OUT_FOR_DELIVERY: 'bg-accent/10 text-accent',
-  DELIVERED: 'bg-success-soft text-success',
-  FAILED: 'bg-danger-soft text-danger',
-  RETURNED: 'bg-warning-soft text-warning',
+const statusColors: Record<Shipment['status'], BadgeProps['color']> = {
+  PENDING: 'neutral',
+  IN_TRANSIT: 'primary',
+  OUT_FOR_DELIVERY: 'primary',
+  DELIVERED: 'success',
+  FAILED: 'error',
+  RETURNED: 'warning',
 }
 </script>
 
 <template>
-  <UiPanel title="Envío">
-    <UiAlert v-if="error">
-      {{ error }}
-    </UiAlert>
+  <UCard
+    title="Envío"
+  >
+    <UAlert
+      v-if="error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="error"
+    />
 
     <p
       v-else-if="!shipment"
-      class="text-sm text-ink-muted"
+      class="text-sm text-muted"
     >
       Aún no se registra el envío.
     </p>
@@ -35,26 +41,26 @@ const statusClasses: Record<Shipment['status'], string> = {
       class="grid gap-2.5 text-sm"
     >
       <div class="flex items-center justify-between gap-4">
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Estado
         </dt>
         <dd>
-          <span
-            class="inline-flex rounded-lg px-2 py-1 text-xs font-medium"
-            :class="statusClasses[shipment.status]"
-          >{{ SHIPMENT_STATUS_LABELS[shipment.status] }}</span>
+          <UBadge
+            :color="statusColors[shipment.status]"
+            :label="SHIPMENT_STATUS_LABELS[shipment.status]"
+          />
         </dd>
       </div>
       <div class="flex justify-between gap-4">
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Paquetería
         </dt>
-        <dd class="text-ink">
+        <dd class="text-highlighted">
           {{ shipment.carrier }}
         </dd>
       </div>
       <div class="flex justify-between gap-4">
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Guía
         </dt>
         <dd class="min-w-0">
@@ -63,10 +69,10 @@ const statusClasses: Record<Shipment['status'], string> = {
             :href="shipment.trackingUrl"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center gap-1 truncate font-mono text-accent hover:underline"
+            class="inline-flex items-center gap-1 truncate font-mono text-primary hover:underline"
           >
             {{ shipment.trackingNumber }}
-            <Icon
+            <UIcon
               name="ph:arrow-square-out"
               class="size-3.5 shrink-0"
               aria-label="(abre en otra pestaña)"
@@ -74,7 +80,7 @@ const statusClasses: Record<Shipment['status'], string> = {
           </a>
           <span
             v-else
-            class="font-mono text-ink"
+            class="font-mono text-highlighted"
           >{{ shipment.trackingNumber }}</span>
         </dd>
       </div>
@@ -82,10 +88,10 @@ const statusClasses: Record<Shipment['status'], string> = {
         v-if="shipment.shippedAt"
         class="flex justify-between gap-4"
       >
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Enviado
         </dt>
-        <dd class="tabular-nums text-ink">
+        <dd class="tabular-nums text-highlighted">
           {{ formatDateTime(shipment.shippedAt) }}
         </dd>
       </div>
@@ -93,10 +99,10 @@ const statusClasses: Record<Shipment['status'], string> = {
         v-if="shipment.estimatedDeliveryAt && !shipment.deliveredAt"
         class="flex justify-between gap-4"
       >
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Entrega estimada
         </dt>
-        <dd class="tabular-nums text-ink">
+        <dd class="tabular-nums text-highlighted">
           {{ formatDate(shipment.estimatedDeliveryAt) }}
         </dd>
       </div>
@@ -104,25 +110,25 @@ const statusClasses: Record<Shipment['status'], string> = {
         v-if="shipment.deliveredAt"
         class="flex justify-between gap-4"
       >
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Entregado
         </dt>
-        <dd class="tabular-nums text-ink">
+        <dd class="tabular-nums text-highlighted">
           {{ formatDateTime(shipment.deliveredAt) }}
         </dd>
       </div>
       <p
         v-if="shipment.notes"
-        class="rounded-xl bg-surface px-3 py-2 text-[13px] text-ink-muted"
+        class="rounded-lg bg-muted px-3 py-2 text-sm text-muted"
       >
         {{ shipment.notes }}
       </p>
       <p
         v-if="shipment.status === 'FAILED' || shipment.status === 'RETURNED'"
-        class="text-[13px] leading-snug text-ink-muted"
+        class="text-sm leading-snug text-muted"
       >
         El paquete no se entregó. Decide si reenvías o reembolsas la orden.
       </p>
     </dl>
-  </UiPanel>
+  </UCard>
 </template>

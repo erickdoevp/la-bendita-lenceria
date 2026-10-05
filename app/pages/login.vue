@@ -31,13 +31,13 @@ async function onSuccess() {
     title="Inicia sesión"
     description="Entra con tu usuario o correo para ver tus pedidos, direcciones y facturas."
   >
-    <UiAlert
+    <UAlert
       v-if="notice"
-      tone="info"
+      color="primary"
+      icon="ph:info"
       class="mb-6"
-    >
-      {{ notice }}
-    </UiAlert>
+      :title="notice"
+    />
 
     <CustomerLoginForm @success="onSuccess" />
 
@@ -45,7 +45,7 @@ async function onSuccess() {
       ¿Aún no tienes cuenta?
       <NuxtLink
         :to="registerTo"
-        class="font-medium text-accent underline-offset-2 hover:underline"
+        class="font-medium text-primary underline-offset-2 hover:underline"
       >
         Crear cuenta
       </NuxtLink>

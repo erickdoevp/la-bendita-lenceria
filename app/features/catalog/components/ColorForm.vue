@@ -12,7 +12,6 @@ const { fieldErrors, formError, validate, applyApiError, clearField, reset } = u
 const values = reactive({ name: '', hex: '#B4235A' })
 const pending = ref(false)
 const isEdit = computed(() => Boolean(props.color))
-const uid = useId()
 
 const validHex = computed(() => /^#[0-9A-Fa-f]{6}$/.test(values.hex.trim()))
 
@@ -26,9 +25,13 @@ watch(() => props.color, fill, { immediate: true })
 watch(() => values.name, () => clearField('name'))
 watch(() => values.hex, () => clearField('hex'))
 
-function onPick(event: Event) {
-  values.hex = (event.target as HTMLInputElement).value.toUpperCase()
-}
+// El selector solo recibe hex validos; lo escrito a mano se valida al guardar
+const picked = computed({
+  get: () => (validHex.value ? values.hex.toUpperCase() : '#000000'),
+  set: (value: string) => {
+    values.hex = value.toUpperCase()
+  },
+})
 
 async function onSubmit() {
   const payload = validate(colorSchema, values)
@@ -55,73 +58,75 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-name`"
-      v-slot="field"
+    <UFormField
       label="Nombre"
-      hint="Las 3 primeras letras van al SKU: Rojo Intenso pasa a ROJ."
+      help="Las 3 primeras letras van al SKU: Rojo Intenso pasa a ROJ."
       :error="fieldErrors.name"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.name"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Vino"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-hex`"
-      v-slot="field"
+    <UFormField
       label="Color"
       :error="fieldErrors.hex"
     >
-      <div class="flex items-center gap-3">
-        <label class="relative grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl border border-line focus-within:ring-3 focus-within:ring-accent/20">
-          <ColorSwatch :hex="validHex ? values.hex : 'transparent'" />
-          <input
-            type="color"
-            class="absolute inset-0 cursor-pointer opacity-0"
-            :value="validHex ? values.hex.toLowerCase() : '#000000'"
-            aria-label="Elegir color en la paleta"
-            @input="onPick"
-          >
-        </label>
-        <UiInput
-          :id="field.id"
-          v-model="values.hex"
-          class="flex-1"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
-          placeholder="#FF2400"
-          maxlength="7"
-          autocomplete="off"
-          spellcheck="false"
-        />
-      </div>
-    </UiField>
+      <UInput
+        v-model="values.hex"
+        placeholder="#FF2400"
+        maxlength="7"
+        autocomplete="off"
+        spellcheck="false"
+        :ui="{ base: 'font-mono', leading: 'ps-1.5' }"
+      >
+        <template #leading>
+          <UPopover>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              aria-label="Elegir color en la paleta"
+            >
+              <ColorSwatch
+                :hex="validHex ? values.hex : 'transparent'"
+                size="sm"
+              />
+            </UButton>
+            <template #content>
+              <UColorPicker
+                v-model="picked"
+                class="p-2"
+              />
+            </template>
+          </UPopover>
+        </template>
+      </UInput>
+    </UFormField>
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        {{ isEdit ? 'Guardar cambios' : 'Crear color' }}
-      </UiButton>
-      <UiButton
+        :label="isEdit ? 'Guardar cambios' : 'Crear color'"
+      />
+      <UButton
         v-if="isEdit"
-        variant="secondary"
+        color="neutral"
+        variant="outline"
+        label="Cancelar"
         :disabled="pending"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

@@ -11,9 +11,8 @@ const api = useOrdersApi()
 const { fieldErrors, formError, validate, applyApiError, clearField } = useFormErrors()
 const values = reactive({ status: props.shipment.status as ShipmentStatus, notes: '' })
 const pending = ref(false)
-const uid = useId()
 
-const statusOptions = Object.entries(SHIPMENT_STATUS_LABELS) as [ShipmentStatus, string][]
+const statusItems = (Object.entries(SHIPMENT_STATUS_LABELS) as [ShipmentStatus, string][]).map(([value, label]) => ({ label, value }))
 
 watch(() => values.status, () => clearField('status'))
 watch(() => values.notes, () => clearField('notes'))
@@ -42,80 +41,69 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-status`"
-      v-slot="field"
+    <UFormField
       label="Estado del envío"
       :error="fieldErrors.status"
     >
-      <UiSelect
-        :id="field.id"
+      <USelect
         v-model="values.status"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
-      >
-        <option
-          v-for="[value, label] in statusOptions"
-          :key="value"
-          :value="value"
-        >
-          {{ label }}
-        </option>
-      </UiSelect>
-    </UiField>
+        :items="statusItems"
+      />
+    </UFormField>
 
-    <UiAlert
+    <UAlert
       v-if="values.status === 'DELIVERED'"
-      tone="info"
+      color="primary"
+      icon="ph:info"
     >
-      La orden pasará a <strong>Entregada</strong>.
-    </UiAlert>
-    <UiAlert
+      <template #title>
+        La orden pasará a <strong>Entregada</strong>.
+    
+      </template>
+    </UAlert>
+    <UAlert
       v-else-if="values.status === 'FAILED' || values.status === 'RETURNED'"
-      tone="info"
-    >
-      La orden no cambia de estado. Después decide si reenvías o reembolsas.
-    </UiAlert>
+      color="primary"
+      icon="ph:info"
+      title="La orden no cambia de estado. Después decide si reenvías o reembolsas."
+    />
 
-    <UiField
-      :id="`${uid}-notes`"
-      v-slot="field"
+    <UFormField
       label="Notas"
-      optional
-      hint="Reemplaza las notas actuales del envío."
+      help="Reemplaza las notas actuales del envío."
       :error="fieldErrors.notes"
+      hint="Opcional"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.notes"
         maxlength="500"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Salió de CDMX"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
     <div class="flex flex-wrap justify-end gap-2">
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
-      <UiButton
+      />
+      <UButton
         type="submit"
         icon="ph:floppy-disk"
         :loading="pending"
         :disabled="values.status === shipment.status && !values.notes.trim()"
-      >
-        Guardar
-      </UiButton>
+        label="Guardar"
+      />
     </div>
   </form>
 </template>

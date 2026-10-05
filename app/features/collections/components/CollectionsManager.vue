@@ -26,34 +26,38 @@ const { items: ordered, dragging, saving, onDragStart, onDragOver, onDragEnd, mo
 
 const rows = computed(() => (searching.value ? store.filtered : ordered.value))
 
+const search = useSearchTerm(() => store.search, (value) => {
+  store.search = value
+})
+
 onMounted(() => store.load())
 </script>
 
 <template>
-  <UiPanel>
+  <UCard>
     <div class="grid gap-5">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <UiSearch
-          id="collections-search"
-          v-model="store.search"
-          label="Buscar colección"
+        <UInput
+          v-model="search"
+          type="search"
+          icon="ph:magnifying-glass"
+          placeholder="Buscar colección"
+          aria-label="Buscar colección"
+          class="flex-1"
         />
-        <p class="text-[13px] text-ink-muted sm:max-w-64">
+        <p class="text-sm text-muted sm:max-w-64">
           {{ searching ? 'Limpia la búsqueda para reordenar.' : 'Arrastra para cambiar el orden en la tienda.' }}
         </p>
       </div>
 
-      <UiAlert v-if="actionError || store.error">
-        {{ actionError ?? store.error }}
-        <button
-          v-if="store.error"
-          type="button"
-          class="ml-1 font-medium underline underline-offset-2"
-          @click="store.load()"
-        >
-          Reintentar
-        </button>
-      </UiAlert>
+      <UAlert
+        v-if="actionError || store.error"
+        color="error"
+        icon="ph:warning-circle"
+        :title="actionError ?? store.error ?? undefined"
+        :actions="store.error ? retryAction(() => store.load()) : undefined"
+        orientation="horizontal"
+      />
 
       <div
         v-if="store.pending && !store.loaded"
@@ -66,34 +70,44 @@ onMounted(() => store.load())
           :key="row"
           class="flex items-center gap-4"
         >
-          <UiSkeleton class="h-12 w-24 shrink-0" />
+          <USkeleton
+            class="h-12 w-24 shrink-0"
+          />
           <div class="grid flex-1 gap-2">
-            <UiSkeleton class="h-4 w-40" />
-            <UiSkeleton class="h-3 w-28" />
+            <USkeleton
+              class="h-4 w-40"
+            />
+            <USkeleton
+              class="h-3 w-28"
+            />
           </div>
-          <UiSkeleton class="h-6 w-16" />
+          <USkeleton
+            class="h-6 w-16"
+          />
         </div>
       </div>
 
-      <UiEmptyState
+      <UEmpty
         v-else-if="store.loaded && !rows.length"
         icon="ph:stack"
         :title="searching ? 'Sin resultados' : 'Aún no hay colecciones'"
         :description="searching ? 'Ninguna colección coincide con la búsqueda.' : 'Agrupa artículos para el escaparate: Verano 2026, Básicos, Lo más vendido.'"
       >
-        <UiButton
-          v-if="!searching"
-          size="sm"
-          icon="ph:plus"
-          :to="COLLECTION_ROUTES.create"
-        >
-          Nueva colección
-        </UiButton>
-      </UiEmptyState>
+        <template #actions>
+          <UButton
+            v-if="!searching"
+            size="sm"
+            icon="ph:plus"
+            :to="COLLECTION_ROUTES.create"
+            label="Nueva colección"
+          />
+      
+        </template>
+      </UEmpty>
 
       <ol
         v-else-if="rows.length"
-        class="-mx-5 divide-y divide-line border-y border-line transition-opacity sm:-mx-6"
+        class="-mx-4 divide-y divide-default border-y border-default transition-opacity sm:-mx-6"
         :class="saving && 'opacity-60'"
         :aria-busy="saving || undefined"
         aria-label="Colecciones en orden de tienda"
@@ -101,18 +115,18 @@ onMounted(() => store.load())
         <li
           v-for="(collection, index) in rows"
           :key="collection.id"
-          class="flex items-center gap-3 px-5 py-3 transition-colors sm:px-6"
-          :class="dragging === collection.id ? 'bg-accent/5' : 'hover:bg-surface'"
+          class="flex items-center gap-3 px-4 py-3 transition-colors sm:px-6"
+          :class="dragging === collection.id ? 'bg-primary/5' : 'hover:bg-muted'"
           :draggable="!searching && !saving"
           @dragstart="onDragStart(collection, $event)"
           @dragover.prevent="onDragOver(collection)"
           @dragend="onDragEnd"
           @drop.prevent
         >
-          <Icon
+          <UIcon
             v-if="!searching"
             name="ph:dots-six-vertical"
-            class="size-5 shrink-0 cursor-grab text-ink-muted active:cursor-grabbing"
+            class="size-5 shrink-0 cursor-grab text-muted active:cursor-grabbing"
             aria-hidden="true"
           />
           <img
@@ -120,14 +134,14 @@ onMounted(() => store.load())
             :src="collection.imageUrl"
             alt=""
             loading="lazy"
-            class="aspect-[16/9] w-20 shrink-0 rounded-lg border border-line object-cover"
+            class="aspect-[16/9] w-20 shrink-0 rounded-lg border border-default object-cover"
             draggable="false"
           >
           <span
             v-else
-            class="grid aspect-[16/9] w-20 shrink-0 place-items-center rounded-lg bg-surface text-ink-muted"
+            class="grid aspect-[16/9] w-20 shrink-0 place-items-center rounded-lg bg-muted text-muted"
           >
-            <Icon
+            <UIcon
               name="ph:image"
               class="size-4"
               aria-hidden="true"
@@ -137,25 +151,27 @@ onMounted(() => store.load())
           <span class="grid min-w-0 flex-1 gap-0.5">
             <NuxtLink
               :to="COLLECTION_ROUTES.detail(collection.id)"
-              class="justify-self-start truncate rounded-md font-medium text-ink hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+              class="justify-self-start truncate rounded-md font-medium text-highlighted hover:underline focus-visible:outline-2 focus-visible:outline-primary"
               draggable="false"
             >{{ collection.name }}</NuxtLink>
-            <span class="truncate font-mono text-xs text-ink-muted">{{ STORE_COLLECTION_PATH }}/{{ collection.slug }}</span>
+            <span class="truncate font-mono text-xs text-muted">{{ STORE_COLLECTION_PATH }}/{{ collection.slug }}</span>
           </span>
 
-          <span class="hidden whitespace-nowrap text-sm tabular-nums text-ink-muted sm:block">
+          <span class="hidden whitespace-nowrap text-sm tabular-nums text-muted sm:block">
             {{ collection.productCount }} {{ collection.productCount === 1 ? 'artículo' : 'artículos' }}
           </span>
-          <span
-            class="inline-flex shrink-0 rounded-lg px-2 py-1 text-xs font-medium"
-            :class="collection.active ? 'bg-success-soft text-success' : 'bg-surface text-ink-muted'"
-          >{{ collection.active ? 'Visible' : 'Oculta' }}</span>
+          <UBadge
+            :color="collection.active ? 'success' : 'neutral'"
+            :label="collection.active ? 'Visible' : 'Oculta'"
+            class="shrink-0"
+          />
 
           <span
             v-if="!searching"
             class="flex shrink-0 gap-0.5"
           >
-            <UiButton
+            <UButton
+              color="neutral"
               variant="ghost"
               size="sm"
               icon="ph:arrow-up"
@@ -163,7 +179,8 @@ onMounted(() => store.load())
               :aria-label="`Subir ${collection.name}`"
               @click="move(collection as Collection, -1)"
             />
-            <UiButton
+            <UButton
+              color="neutral"
               variant="ghost"
               size="sm"
               icon="ph:arrow-down"
@@ -175,5 +192,5 @@ onMounted(() => store.load())
         </li>
       </ol>
     </div>
-  </UiPanel>
+  </UCard>
 </template>

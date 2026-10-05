@@ -50,7 +50,7 @@ defineExpose({
     />
     <p
       v-if="loadFailed"
-      class="text-sm text-danger"
+      class="text-sm text-error"
     >
       No se pudo cargar la verificación. Recarga la página.
     </p>

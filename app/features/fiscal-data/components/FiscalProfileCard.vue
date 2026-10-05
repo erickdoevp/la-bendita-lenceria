@@ -17,18 +17,18 @@ watch(() => props.busy, (value, previous) => {
 
 <template>
   <article
-    class="flex h-full flex-col gap-4 rounded-2xl border bg-surface-raised p-5"
-    :class="profile.isDefault ? 'border-accent/50' : 'border-line'"
+    class="flex h-full flex-col gap-4 rounded-lg border bg-default p-5"
+    :class="profile.isDefault ? 'border-primary/50' : 'border-default'"
   >
     <header class="flex items-start justify-between gap-3">
-      <h3 class="font-mono text-[15px] font-medium tracking-wide text-ink">
+      <h3 class="font-mono text-base font-medium tracking-wide text-highlighted">
         {{ profile.rfc }}
       </h3>
       <span
         v-if="profile.isDefault"
-        class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-accent/10 px-2 py-1 text-xs font-medium text-accent"
+        class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
       >
-        <Icon
+        <UIcon
           name="ph:star-fill"
           class="size-3.5"
           aria-hidden="true"
@@ -42,69 +42,70 @@ watch(() => props.busy, (value, previous) => {
         <dt class="sr-only">
           Razón social
         </dt>
-        <dd class="font-medium text-ink">
+        <dd class="font-medium text-highlighted">
           {{ profile.razonSocial }}
         </dd>
       </div>
       <div class="grid gap-0.5">
-        <dt class="text-xs text-ink-muted">
+        <dt class="text-xs text-muted">
           Régimen
         </dt>
-        <dd class="text-ink-muted">
+        <dd class="text-muted">
           {{ regimenLabel(profile.regimenFiscal) }}
         </dd>
       </div>
       <div class="grid gap-0.5">
-        <dt class="text-xs text-ink-muted">
+        <dt class="text-xs text-muted">
           C.P. fiscal
         </dt>
-        <dd class="tabular-nums text-ink-muted">
+        <dd class="tabular-nums text-muted">
           {{ profile.cp }}
         </dd>
       </div>
     </dl>
 
-    <footer class="flex flex-wrap items-center gap-1.5 border-t border-line pt-3">
+    <footer class="flex flex-wrap items-center gap-1.5 border-t border-default pt-3">
       <template v-if="confirming">
-        <span class="mr-auto text-xs text-ink-muted">¿Eliminar este RFC?</span>
-        <UiButton
-          variant="danger"
+        <span class="mr-auto text-xs text-muted">¿Eliminar este RFC?</span>
+        <UButton
+          color="error"
+          variant="soft"
           size="sm"
           :loading="busy === 'delete'"
+          label="Sí, eliminar"
           @click="emit('remove')"
-        >
-          Sí, eliminar
-        </UiButton>
-        <UiButton
+        />
+        <UButton
+          color="neutral"
           variant="ghost"
           size="sm"
           :disabled="busy === 'delete'"
+          label="No"
           @click="confirming = false"
-        >
-          No
-        </UiButton>
+        />
       </template>
       <template v-else>
-        <UiButton
-          variant="secondary"
+        <UButton
+          color="neutral"
+          variant="outline"
           size="sm"
           icon="ph:pencil-simple"
           :disabled="Boolean(busy)"
+          label="Editar"
           @click="emit('edit')"
-        >
-          Editar
-        </UiButton>
-        <UiButton
+        />
+        <UButton
           v-if="!profile.isDefault"
+          color="neutral"
           variant="ghost"
           size="sm"
           :loading="busy === 'default'"
           :disabled="Boolean(busy)"
+          label="Hacer predeterminado"
           @click="emit('setDefault')"
-        >
-          Hacer predeterminado
-        </UiButton>
-        <UiButton
+        />
+        <UButton
+          color="neutral"
           variant="ghost"
           size="sm"
           icon="ph:trash"

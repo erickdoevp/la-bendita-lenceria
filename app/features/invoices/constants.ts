@@ -1,3 +1,4 @@
+import type { BadgeProps } from '@nuxt/ui'
 import type { InvoiceStatus } from './types'
 
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
@@ -6,10 +7,10 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   CANCELLED: 'Cancelada',
 }
 
-export const INVOICE_STATUS_CLASSES: Record<InvoiceStatus, string> = {
-  PENDING: 'bg-warning-soft text-warning',
-  STAMPED: 'bg-success-soft text-success',
-  CANCELLED: 'bg-surface text-ink-muted',
+export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, BadgeProps['color']> = {
+  PENDING: 'warning',
+  STAMPED: 'success',
+  CANCELLED: 'neutral',
 }
 
 export const INVOICE_TABS: { status: InvoiceStatus | '', label: string }[] = [

@@ -13,27 +13,29 @@ const colorGalleries = computed(() => draft.variantColorIds.map((id) => {
 </script>
 
 <template>
-  <UiPanel
+  <UCard
     title="Imágenes"
     description="La primera foto de cada galería es la principal. Puedes cambiarla después de subirlas."
   >
     <div class="grid gap-8">
-      <UiAlert tone="info">
-        Cada variante muestra su foto propia. Si no tiene, usa la principal de su color y, si tampoco hay, la principal de la galería general.
-      </UiAlert>
+      <UAlert
+        color="primary"
+        icon="ph:info"
+        title="Cada variante muestra su foto propia. Si no tiene, usa la principal de su color y, si tampoco hay, la principal de la galería general."
+      />
 
       <div class="grid gap-3">
         <div class="grid gap-1">
-          <h3 class="text-sm font-semibold text-ink">
+          <h3 class="text-sm font-semibold text-highlighted">
             Fotos por color
           </h3>
-          <p class="text-sm text-ink-muted">
+          <p class="text-sm text-muted">
             Lo normal: todas las tallas de un color comparten estas fotos.
           </p>
         </div>
         <p
           v-if="!colorGalleries.length"
-          class="text-sm text-ink-muted"
+          class="text-sm text-muted"
         >
           Elige colores en Variantes para subir sus fotos.
         </p>
@@ -51,22 +53,21 @@ const colorGalleries = computed(() => draft.variantColorIds.map((id) => {
         </div>
       </div>
 
-      <div class="grid gap-3 border-t border-line pt-6">
+      <div class="grid gap-3 border-t border-default pt-6">
         <div class="grid gap-1">
-          <h3 class="text-sm font-semibold text-ink">
+          <h3 class="text-sm font-semibold text-highlighted">
             Galería general
           </h3>
-          <p class="text-sm text-ink-muted">
+          <p class="text-sm text-muted">
             Fotos que no dependen del color: detalle de la tela, guía de tallas, fotos de ambiente.
           </p>
         </div>
-        <UiImagePicker
-          id="general-gallery"
+        <ImagePicker
           v-model="draft.generalImages"
           multiple
           :error="draft.fieldErrors.images"
         />
       </div>
     </div>
-  </UiPanel>
+  </UCard>
 </template>

@@ -1,5 +1,3 @@
-import tailwindcss from '@tailwindcss/vite'
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -8,12 +6,17 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/image',
-    '@nuxt/fonts',
-    '@nuxt/icon',
+    '@nuxt/ui',
     '@pinia/nuxt',
   ],
 
   css: ['~/assets/css/main.css'],
+
+  // Nuxt UI trae @nuxt/icon, @nuxt/fonts, Tailwind y el modo de color (clase .dark en <html>)
+  colorMode: {
+    preference: 'system',
+    fallback: 'light',
+  },
 
   // Valores por defecto; se sobrescriben con las variables NUXT_* de .env.*
   runtimeConfig: {
@@ -37,10 +40,6 @@ export default defineNuxtConfig({
     // El pago depende de la sesion en memoria y del token de invitada en localStorage
     '/pagar': { ssr: false },
     '/pagar/**': { ssr: false },
-  },
-
-  vite: {
-    plugins: [tailwindcss()],
   },
 
   app: {

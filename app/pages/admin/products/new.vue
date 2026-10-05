@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Nuevo artículo"
       description="Datos, variantes y fotos se guardan en un solo envío. Si sales a crear una talla o un color, el borrador te espera aquí."
     />

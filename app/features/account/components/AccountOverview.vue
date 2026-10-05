@@ -17,10 +17,10 @@ const sections = ACCOUNT_NAV.filter(item => !item.exact)
         size="lg"
       />
       <div class="grid min-w-0 gap-1">
-        <h1 class="text-2xl font-semibold tracking-tight text-ink md:text-3xl">
+        <h1 class="text-2xl font-semibold tracking-tight text-highlighted md:text-3xl">
           Hola, {{ auth.user.name }}
         </h1>
-        <p class="truncate text-ink-muted">
+        <p class="truncate text-muted">
           {{ auth.user.email }} · Con cuenta desde {{ formatDate(auth.user.createdAt.slice(0, 10)) }}
         </p>
       </div>
@@ -33,22 +33,22 @@ const sections = ACCOUNT_NAV.filter(item => !item.exact)
       >
         <NuxtLink
           :to="section.to"
-          class="group flex h-full items-start gap-4 rounded-2xl border border-line bg-surface-raised p-5 transition-[border-color,transform] duration-200 hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-accent active:scale-[0.99]"
+          class="group flex h-full items-start gap-4 rounded-lg border border-default bg-default p-5 transition-[border-color,transform] duration-200 hover:border-accented focus-visible:outline-2 focus-visible:outline-primary active:scale-[0.99]"
         >
-          <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
-            <Icon
+          <span class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <UIcon
               :name="section.icon"
               class="size-5"
               aria-hidden="true"
             />
           </span>
           <span class="grid min-w-0 flex-1 gap-1">
-            <span class="font-medium text-ink">{{ section.label }}</span>
-            <span class="text-sm leading-relaxed text-ink-muted">{{ section.description }}</span>
+            <span class="font-medium text-highlighted">{{ section.label }}</span>
+            <span class="text-sm leading-relaxed text-muted">{{ section.description }}</span>
           </span>
-          <Icon
+          <UIcon
             name="ph:caret-right"
-            class="mt-2.5 size-4 shrink-0 text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5"
+            class="mt-2.5 size-4 shrink-0 text-muted transition-transform duration-200 group-hover:translate-x-0.5"
             aria-hidden="true"
           />
         </NuxtLink>

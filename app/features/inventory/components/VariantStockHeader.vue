@@ -9,9 +9,9 @@ defineProps<{ variant: VariantStock }>()
 </script>
 
 <template>
-  <UiPanel>
+  <UCard>
     <div class="grid gap-6 md:grid-cols-[7rem_minmax(0,1fr)]">
-      <div class="aspect-[4/5] w-28 overflow-hidden rounded-xl border border-line bg-surface">
+      <div class="aspect-[4/5] w-28 overflow-hidden rounded-lg border border-default bg-muted">
         <img
           v-if="variant.imageUrl"
           :src="variant.imageUrl"
@@ -20,9 +20,9 @@ defineProps<{ variant: VariantStock }>()
         >
         <div
           v-else
-          class="grid size-full place-items-center text-ink-muted"
+          class="grid size-full place-items-center text-muted"
         >
-          <Icon
+          <UIcon
             name="ph:image"
             class="size-6"
             aria-hidden="true"
@@ -37,15 +37,17 @@ defineProps<{ variant: VariantStock }>()
               :available-stock="variant.availableStock"
               :low-stock="variant.lowStock"
             />
-            <span class="inline-flex rounded-lg bg-surface px-2 py-1 text-xs font-medium text-ink-muted">
-              {{ STATUS_LABELS[variant.productStatus] }}
-            </span>
-            <span
+            <UBadge
+              color="neutral"
+              :label="STATUS_LABELS[variant.productStatus]"
+            />
+            <UBadge
               v-if="!variant.active"
-              class="inline-flex rounded-lg bg-surface px-2 py-1 text-xs font-medium text-ink-muted"
-            >Variante inactiva</span>
+              color="neutral"
+              label="Variante inactiva"
+            />
           </div>
-          <p class="font-mono text-sm text-ink-muted">
+          <p class="font-mono text-sm text-muted">
             {{ variant.sku }}
           </p>
           <dl class="flex flex-wrap gap-x-5 gap-y-1 text-sm">
@@ -57,31 +59,31 @@ defineProps<{ variant: VariantStock }>()
                 :hex="variant.colorHex"
                 size="sm"
               />
-              <dd class="text-ink">
+              <dd class="text-highlighted">
                 {{ variant.colorName }}
               </dd>
             </div>
             <div class="flex items-center gap-1.5">
-              <dt class="text-ink-muted">
+              <dt class="text-muted">
                 Talla
               </dt>
-              <dd class="font-medium text-ink">
+              <dd class="font-medium text-highlighted">
                 {{ variant.sizeName }}
               </dd>
             </div>
             <div class="flex items-center gap-1.5">
-              <dt class="text-ink-muted">
+              <dt class="text-muted">
                 Precio
               </dt>
-              <dd class="tabular-nums text-ink">
+              <dd class="tabular-nums text-highlighted">
                 {{ formatMoney(variant.finalPrice) }}
               </dd>
             </div>
             <div class="flex items-center gap-1.5">
-              <dt class="text-ink-muted">
+              <dt class="text-muted">
                 Costo
               </dt>
-              <dd class="tabular-nums text-ink">
+              <dd class="tabular-nums text-highlighted">
                 {{ formatMoney(variant.costPrice) }}
               </dd>
             </div>
@@ -98,5 +100,5 @@ defineProps<{ variant: VariantStock }>()
         </div>
       </div>
     </div>
-  </UiPanel>
+  </UCard>
 </template>

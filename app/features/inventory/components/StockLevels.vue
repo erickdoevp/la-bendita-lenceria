@@ -12,22 +12,22 @@ const cells = computed(() => [
 </script>
 
 <template>
-  <dl class="grid grid-cols-3 divide-x divide-line rounded-xl border border-line">
+  <dl class="grid grid-cols-3 divide-x divide-default rounded-lg border border-default">
     <div
       v-for="cell in cells"
       :key="cell.label"
       class="grid gap-1 px-3 py-3 sm:px-4"
     >
-      <dt class="text-xs font-medium text-ink-muted">
+      <dt class="text-xs font-medium text-muted">
         {{ cell.label }}
       </dt>
       <dd
         class="text-2xl font-semibold tabular-nums tracking-tight"
-        :class="cell.main && (levels.availableStock <= 0 ? 'text-danger' : levels.lowStock ? 'text-warning' : 'text-ink')"
+        :class="cell.main && (levels.availableStock <= 0 ? 'text-error' : levels.lowStock ? 'text-warning' : 'text-highlighted')"
       >
         {{ cell.value }}
       </dd>
-      <dd class="text-xs text-ink-muted">
+      <dd class="text-xs text-muted">
         {{ cell.hint }}
       </dd>
     </div>

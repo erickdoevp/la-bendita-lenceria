@@ -80,74 +80,60 @@ async function onDelete() {
 <template>
   <div class="grid gap-8">
     <div class="grid gap-3">
-      <NuxtLink
+      <UButton
         :to="COUPON_ROUTES.list"
-        class="inline-flex items-center gap-1.5 justify-self-start rounded-md text-sm text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
-      >
-        <Icon
-          name="ph:arrow-left"
-          class="size-4"
-          aria-hidden="true"
-        />
-        Cupones
-      </NuxtLink>
+        color="neutral"
+        variant="link"
+        icon="ph:arrow-left"
+        label="Cupones"
+        class="justify-self-start px-0"
+      />
 
-      <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div class="grid max-w-[65ch] gap-2">
-          <div class="flex flex-wrap items-center gap-3">
-            <h1 class="font-mono text-2xl font-semibold tracking-wide text-ink md:text-3xl">
-              {{ coupon?.code ?? 'Cupón' }}
-            </h1>
+      <UPageHeader :description="coupon ? describeCoupon(coupon) : undefined">
+        <template #title>
+          <span class="flex flex-wrap items-center gap-3">
+            <span class="font-mono tracking-wide">{{ coupon?.code ?? 'Cupón' }}</span>
             <CouponStatusBadge
               v-if="coupon"
               :coupon="coupon"
             />
-          </div>
-          <p
-            v-if="coupon"
-            class="leading-relaxed text-ink-muted"
-          >
-            {{ describeCoupon(coupon) }}
-          </p>
-        </div>
+          </span>
+        </template>
 
-        <div
+        <template
           v-if="coupon"
-          class="flex flex-wrap gap-2"
+          #links
         >
-          <UiButton
-            variant="secondary"
+          <UButton
+            color="neutral"
+            variant="outline"
             :icon="coupon.active ? 'ph:pause-circle' : 'ph:play-circle'"
+            :label="coupon.active ? 'Desactivar' : 'Activar'"
             :loading="toggling"
             @click="onToggle"
-          >
-            {{ coupon.active ? 'Desactivar' : 'Activar' }}
-          </UiButton>
+          />
           <!-- Borrar solo si nunca se uso; si no, el backend responde 409 -->
-          <UiButton
+          <UButton
             v-if="coupon.usedCount === 0"
-            variant="danger"
+            color="error"
+            variant="soft"
             icon="ph:trash"
+            label="Eliminar"
             :disabled="toggling"
             @click="deleteOpen = true"
-          >
-            Eliminar
-          </UiButton>
-        </div>
-      </header>
+          />
+        </template>
+      </UPageHeader>
     </div>
 
-    <UiAlert v-if="error">
-      {{ error.status === 404 ? 'Este cupón no existe.' : error.message }}
-      <button
-        v-if="error.status !== 404"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="load"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="error.status === 404 ? 'Este cupón no existe.' : error.message"
+      :actions="error.status !== 404 ? retryAction(load) : undefined"
+      orientation="horizontal"
+    />
 
     <div
       v-else-if="pending && !coupon"
@@ -155,20 +141,23 @@ async function onDelete() {
       role="status"
       aria-label="Cargando cupón"
     >
-      <UiSkeleton class="h-96 rounded-2xl" />
-      <UiSkeleton class="h-56 rounded-2xl" />
+      <USkeleton class="h-96 rounded-lg" />
+      <USkeleton class="h-56 rounded-lg" />
     </div>
 
     <template v-else-if="coupon">
-      <UiAlert v-if="actionError">
-        {{ actionError }}
-      </UiAlert>
-      <UiAlert
+      <UAlert
+        v-if="actionError"
+        color="error"
+        icon="ph:warning-circle"
+        :title="actionError"
+      />
+      <UAlert
         v-else-if="notice"
-        tone="info"
-      >
-        {{ notice }}
-      </UiAlert>
+        color="primary"
+        icon="ph:info"
+        :title="notice"
+      />
 
       <CouponForm
         :key="formKey"
@@ -185,29 +174,30 @@ async function onDelete() {
         @retry="usages.load()"
       />
 
-      <UiModal
+      <UModal
         v-model:open="deleteOpen"
         :title="`Eliminar ${coupon.code}`"
         description="Nadie lo ha usado, así que se puede borrar. No se puede deshacer."
       >
-        <div class="flex flex-wrap justify-end gap-2">
-          <UiButton
-            variant="secondary"
-            :disabled="deleting"
-            @click="deleteOpen = false"
-          >
-            Cancelar
-          </UiButton>
-          <UiButton
-            variant="danger"
-            icon="ph:trash"
-            :loading="deleting"
-            @click="onDelete"
-          >
-            Sí, eliminar
-          </UiButton>
-        </div>
-      </UiModal>
+        <template #footer>
+          <div class="flex w-full flex-wrap justify-end gap-2">
+            <UButton
+              color="neutral"
+              variant="outline"
+              label="Cancelar"
+              :disabled="deleting"
+              @click="deleteOpen = false"
+            />
+            <UButton
+              color="error"
+              icon="ph:trash"
+              label="Sí, eliminar"
+              :loading="deleting"
+              @click="onDelete"
+            />
+          </div>
+        </template>
+      </UModal>
     </template>
   </div>
 </template>

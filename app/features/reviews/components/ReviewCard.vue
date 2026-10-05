@@ -32,30 +32,29 @@ watch(() => props.deleting, (value, previous) => {
 
 <template>
   <article
-    class="grid gap-3 px-5 py-4 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-4 sm:px-6"
-    :class="selected && 'bg-accent/5'"
+    class="grid gap-3 px-4 py-4 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-4 sm:px-6"
+    :class="selected && 'bg-primary/5'"
   >
     <div class="flex items-start gap-3">
-      <input
+      <UCheckbox
         v-if="selectable"
-        type="checkbox"
-        class="mt-3 size-4 shrink-0 accent-[var(--accent)]"
-        :checked="selected"
+        :model-value="selected"
+        class="mt-3"
         :aria-label="`Seleccionar la reseña de ${review.username}`"
-        @change="emit('toggle')"
-      >
+        @update:model-value="emit('toggle')"
+      />
       <img
         v-if="review.productImageUrl"
         :src="review.productImageUrl"
         alt=""
         loading="lazy"
-        class="aspect-[4/5] w-12 shrink-0 rounded-lg border border-line object-cover"
+        class="aspect-[4/5] w-12 shrink-0 rounded-lg border border-default object-cover"
       >
       <span
         v-else
-        class="grid aspect-[4/5] w-12 shrink-0 place-items-center rounded-lg bg-surface text-ink-muted"
+        class="grid aspect-[4/5] w-12 shrink-0 place-items-center rounded-lg bg-muted text-muted"
       >
-        <Icon
+        <UIcon
           name="ph:image"
           class="size-4"
           aria-hidden="true"
@@ -65,67 +64,66 @@ watch(() => props.deleting, (value, previous) => {
 
     <div class="grid min-w-0 content-start gap-2">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        <button
-          type="button"
-          class="truncate rounded-md font-medium text-ink hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+        <UButton
+          color="neutral"
+          variant="link"
+          :label="review.productName"
           :title="`Ver todas las reseñas de ${review.productName}`"
+          class="truncate p-0 font-medium text-highlighted"
           @click="emit('filterProduct')"
-        >
-          {{ review.productName }}
-        </button>
+        />
         <RatingStars :rating="review.rating" />
       </div>
 
       <div class="flex flex-wrap items-center gap-1.5 text-xs">
-        <span class="text-ink-muted">{{ review.username }} · {{ formatDateTime(review.createdAt) }}</span>
-        <span
+        <span class="text-muted">{{ review.username }} · {{ formatDateTime(review.createdAt) }}</span>
+        <UBadge
           v-if="review.verifiedPurchase"
-          class="inline-flex items-center gap-1 rounded-md bg-success-soft px-1.5 py-0.5 font-medium text-success"
-        >
-          <Icon
-            name="ph:seal-check"
-            class="size-3.5"
-            aria-hidden="true"
-          />
-          Compra verificada
-        </span>
-        <span
+          color="success"
+          size="sm"
+          icon="ph:seal-check"
+          label="Compra verificada"
+        />
+        <UBadge
           v-if="edited"
-          class="rounded-md bg-surface px-1.5 py-0.5 font-medium text-ink-muted"
+          color="neutral"
+          size="sm"
+          label="Editada"
           :title="`Editada el ${formatDateTime(review.updatedAt)}`"
-        >Editada</span>
-        <span
+        />
+        <UBadge
           v-if="showStatus"
-          class="rounded-md px-1.5 py-0.5 font-medium"
-          :class="review.approved ? 'bg-accent/10 text-accent' : 'bg-warning-soft text-warning'"
-        >{{ review.approved ? 'Publicada' : 'Pendiente' }}</span>
+          :color="review.approved ? 'primary' : 'warning'"
+          size="sm"
+          :label="review.approved ? 'Publicada' : 'Pendiente'"
+        />
       </div>
 
       <p
         v-if="review.title"
-        class="font-medium text-ink"
+        class="font-medium text-highlighted"
       >
         {{ review.title }}
       </p>
       <p
         v-if="review.body"
-        class="whitespace-pre-line text-sm leading-relaxed text-ink-muted"
+        class="whitespace-pre-line text-sm leading-relaxed text-muted"
         :class="longBody && !expanded && 'line-clamp-4'"
       >
         {{ review.body }}
       </p>
-      <button
+      <UButton
         v-if="longBody"
-        type="button"
-        class="justify-self-start text-[13px] text-accent hover:underline"
+        variant="link"
+        size="sm"
+        :label="expanded ? 'Ver menos' : 'Leer completa'"
         :aria-expanded="expanded"
+        class="justify-self-start px-0"
         @click="expanded = !expanded"
-      >
-        {{ expanded ? 'Ver menos' : 'Leer completa' }}
-      </button>
+      />
       <p
         v-if="!review.title && !review.body"
-        class="text-sm italic text-ink-muted"
+        class="text-sm italic text-muted"
       >
         Solo calificación, sin texto.
       </p>
@@ -133,46 +131,45 @@ watch(() => props.deleting, (value, previous) => {
 
     <div class="flex flex-wrap items-start gap-1.5 sm:flex-col sm:items-end">
       <template v-if="confirming">
-        <span class="text-xs text-ink-muted sm:text-right">¿Borrar? No se puede deshacer.</span>
+        <span class="text-xs text-muted sm:text-right">¿Borrar? No se puede deshacer.</span>
         <div class="flex gap-1.5">
-          <UiButton
-            variant="danger"
+          <UButton
+            color="error"
+            variant="soft"
             size="sm"
             :loading="deleting"
+            label="Sí, borrar"
             @click="emit('remove')"
-          >
-            Sí, borrar
-          </UiButton>
-          <UiButton
+          />
+          <UButton
+            color="neutral"
             variant="ghost"
             size="sm"
             :disabled="deleting"
+            label="No"
             @click="confirming = false"
-          >
-            No
-          </UiButton>
+          />
         </div>
       </template>
       <template v-else>
-        <UiButton
+        <UButton
           v-if="!review.approved"
           size="sm"
           icon="ph:check"
           :loading="approving"
           :disabled="deleting"
+          label="Aprobar"
           @click="emit('approve')"
-        >
-          Aprobar
-        </UiButton>
-        <UiButton
+        />
+        <UButton
+          color="neutral"
           variant="ghost"
           size="sm"
           icon="ph:trash"
           :disabled="approving"
+          :label="review.approved ? 'Borrar' : 'Rechazar'"
           @click="confirming = true"
-        >
-          {{ review.approved ? 'Borrar' : 'Rechazar' }}
-        </UiButton>
+        />
       </template>
     </div>
   </article>

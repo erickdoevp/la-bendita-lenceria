@@ -25,10 +25,10 @@ const steps = [
 <template>
   <div class="grid gap-10">
     <section class="max-w-2xl">
-      <h1 class="text-3xl font-semibold tracking-tight text-ink">
+      <h1 class="text-3xl font-semibold tracking-tight text-highlighted">
         Hola, {{ auth.user?.name }}
       </h1>
-      <p class="mt-3 leading-relaxed text-ink-muted">
+      <p class="mt-3 leading-relaxed text-muted">
         Para dar de alta un artículo, primero deben existir su categoría, sus tallas y sus colores.
       </p>
     </section>
@@ -40,22 +40,22 @@ const steps = [
       >
         <NuxtLink
           :to="step.to"
-          class="group flex items-center gap-4 rounded-2xl border border-line bg-surface-raised p-5 transition-colors duration-200 hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-accent"
+          class="group flex items-center gap-4 rounded-lg border border-default bg-default p-5 transition-colors duration-200 hover:border-accented focus-visible:outline-2 focus-visible:outline-primary"
         >
-          <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
-            <Icon
+          <span class="grid size-11 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <UIcon
               :name="step.icon"
               class="size-5"
               aria-hidden="true"
             />
           </span>
           <span class="grid flex-1 gap-0.5">
-            <span class="font-medium text-ink">{{ step.title }}</span>
-            <span class="text-sm text-ink-muted">{{ step.text }}</span>
+            <span class="font-medium text-highlighted">{{ step.title }}</span>
+            <span class="text-sm text-muted">{{ step.text }}</span>
           </span>
-          <Icon
+          <UIcon
             name="ph:arrow-right"
-            class="size-4 text-ink-muted transition-transform duration-200 group-hover:translate-x-0.5"
+            class="size-4 text-muted transition-transform duration-200 group-hover:translate-x-0.5"
             aria-hidden="true"
           />
         </NuxtLink>

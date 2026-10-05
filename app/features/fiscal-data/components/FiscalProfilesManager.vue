@@ -37,7 +37,7 @@ async function run(profile: FiscalProfile, action: 'default' | 'delete') {
 
 <template>
   <div class="grid gap-6">
-    <UiPageHeader
+    <UPageHeader
       title="Datos fiscales"
       description="Tus RFC para facturar. Los eliges al solicitar la factura de un pedido."
     >
@@ -45,26 +45,22 @@ async function run(profile: FiscalProfile, action: 'default' | 'delete') {
         v-if="store.items.length"
         #actions
       >
-        <UiButton
+        <UButton
           icon="ph:plus"
+          label="Agregar RFC"
           @click="openForm()"
-        >
-          Agregar RFC
-        </UiButton>
+        />
       </template>
-    </UiPageHeader>
+    </UPageHeader>
 
-    <UiAlert v-if="actionError || store.error">
-      {{ actionError ?? store.error }}
-      <button
-        v-if="store.error"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="store.load()"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="actionError || store.error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="actionError ?? store.error ?? undefined"
+      :actions="store.error ? retryAction(() => store.load()) : undefined"
+      orientation="horizontal"
+    />
 
     <ul
       v-if="store.pending && !store.loaded"
@@ -74,23 +70,27 @@ async function run(profile: FiscalProfile, action: 'default' | 'delete') {
         v-for="n in 2"
         :key="n"
       >
-        <UiSkeleton class="h-48 rounded-2xl" />
+        <USkeleton
+          class="h-48 rounded-lg"
+        />
       </li>
     </ul>
 
-    <UiEmptyState
+    <UEmpty
       v-else-if="store.loaded && !store.items.length"
       icon="ph:identification-card"
       title="Aún no tienes datos fiscales"
       description="Agrega tu RFC tal como aparece en tu Constancia de Situación Fiscal para poder pedir facturas."
     >
-      <UiButton
-        icon="ph:plus"
-        @click="openForm()"
-      >
-        Agregar RFC
-      </UiButton>
-    </UiEmptyState>
+      <template #actions>
+        <UButton
+          icon="ph:plus"
+          label="Agregar RFC"
+          @click="openForm()"
+        />
+    
+      </template>
+    </UEmpty>
 
     <ul
       v-else
@@ -110,16 +110,19 @@ async function run(profile: FiscalProfile, action: 'default' | 'delete') {
       </li>
     </ul>
 
-    <UiModal
+    <UModal
       v-model:open="modalOpen"
       :title="editing ? `Editar ${editing.rfc}` : 'Nuevo RFC'"
     >
-      <FiscalProfileForm
-        :key="editing?.id ?? 'new'"
-        :profile="editing"
-        @saved="modalOpen = false"
-        @cancel="modalOpen = false"
-      />
-    </UiModal>
+      <template #body>
+        <FiscalProfileForm
+          :key="editing?.id ?? 'new'"
+          :profile="editing"
+          @saved="modalOpen = false"
+          @cancel="modalOpen = false"
+        />
+    
+      </template>
+    </UModal>
   </div>
 </template>

@@ -18,35 +18,37 @@ watch(() => props.deleting, (value, previous) => {
 <template>
   <div class="flex items-center justify-end gap-1">
     <template v-if="confirming">
-      <span class="mr-1 text-sm text-ink-muted">¿Eliminar?</span>
-      <UiButton
-        variant="danger"
+      <span class="mr-1 text-sm text-muted">¿Eliminar?</span>
+      <UButton
+        color="error"
+        variant="soft"
         size="sm"
+        label="Sí, eliminar"
         :loading="deleting"
         @click="emit('delete')"
-      >
-        Sí, eliminar
-      </UiButton>
-      <UiButton
+      />
+      <UButton
+        color="neutral"
         variant="ghost"
         size="sm"
+        label="No"
         :disabled="deleting"
         @click="confirming = false"
-      >
-        No
-      </UiButton>
+      />
     </template>
     <template v-else>
-      <UiButton
+      <UButton
         v-if="editable"
+        color="neutral"
         variant="ghost"
         size="sm"
         icon="ph:pencil-simple"
         :aria-label="`Editar ${name}`"
         @click="emit('edit')"
       />
-      <UiButton
+      <UButton
         v-if="deletable"
+        color="neutral"
         variant="ghost"
         size="sm"
         icon="ph:trash"

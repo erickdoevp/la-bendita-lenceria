@@ -37,7 +37,7 @@ async function run(address: Address, action: 'default' | 'delete') {
 
 <template>
   <div class="grid gap-6">
-    <UiPageHeader
+    <UPageHeader
       title="Direcciones"
       :description="`Tus domicilios de entrega para el checkout. Puedes guardar hasta ${MAX_ADDRESSES}.`"
     >
@@ -45,34 +45,34 @@ async function run(address: Address, action: 'default' | 'delete') {
         v-if="store.items.length"
         #actions
       >
-        <UiButton
+        <UButton
           icon="ph:plus"
           :disabled="store.isFull"
+          label="Agregar dirección"
           @click="openForm()"
-        >
-          Agregar dirección
-        </UiButton>
+        />
       </template>
-    </UiPageHeader>
+    </UPageHeader>
 
-    <UiAlert v-if="actionError || store.error">
-      {{ actionError ?? store.error }}
-      <button
-        v-if="store.error"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="store.load()"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="actionError || store.error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="actionError ?? store.error ?? undefined"
+      :actions="store.error ? retryAction(() => store.load()) : undefined"
+      orientation="horizontal"
+    />
 
-    <UiAlert
+    <UAlert
       v-if="store.isFull"
-      tone="info"
+      color="primary"
+      icon="ph:info"
     >
-      Llegaste al máximo de {{ MAX_ADDRESSES }} direcciones. Elimina una para agregar otra.
-    </UiAlert>
+      <template #title>
+        Llegaste al máximo de {{ MAX_ADDRESSES }} direcciones. Elimina una para agregar otra.
+    
+      </template>
+    </UAlert>
 
     <ul
       v-if="store.pending && !store.loaded"
@@ -82,23 +82,27 @@ async function run(address: Address, action: 'default' | 'delete') {
         v-for="n in 2"
         :key="n"
       >
-        <UiSkeleton class="h-52 rounded-2xl" />
+        <USkeleton
+          class="h-52 rounded-lg"
+        />
       </li>
     </ul>
 
-    <UiEmptyState
+    <UEmpty
       v-else-if="store.loaded && !store.items.length"
       icon="ph:map-pin"
       title="Aún no tienes direcciones"
       description="Guarda tu domicilio para que el checkout sea más rápido."
     >
-      <UiButton
-        icon="ph:plus"
-        @click="openForm()"
-      >
-        Agregar dirección
-      </UiButton>
-    </UiEmptyState>
+      <template #actions>
+        <UButton
+          icon="ph:plus"
+          label="Agregar dirección"
+          @click="openForm()"
+        />
+    
+      </template>
+    </UEmpty>
 
     <ul
       v-else
@@ -118,16 +122,19 @@ async function run(address: Address, action: 'default' | 'delete') {
       </li>
     </ul>
 
-    <UiModal
+    <UModal
       v-model:open="modalOpen"
       :title="editing ? `Editar ${editing.alias}` : 'Nueva dirección'"
     >
-      <AddressForm
-        :key="editing?.id ?? 'new'"
-        :address="editing"
-        @saved="modalOpen = false"
-        @cancel="modalOpen = false"
-      />
-    </UiModal>
+      <template #body>
+        <AddressForm
+          :key="editing?.id ?? 'new'"
+          :address="editing"
+          @saved="modalOpen = false"
+          @cancel="modalOpen = false"
+        />
+    
+      </template>
+    </UModal>
   </div>
 </template>

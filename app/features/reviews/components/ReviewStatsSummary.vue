@@ -30,10 +30,10 @@ defineExpose({ load })
 </script>
 
 <template>
-  <div class="rounded-xl border border-line p-4">
+  <div class="rounded-lg border border-default p-4">
     <p
       v-if="error"
-      class="text-sm text-danger"
+      class="text-sm text-error"
     >
       {{ error }}
     </p>
@@ -43,20 +43,24 @@ defineExpose({ load })
       role="status"
       aria-label="Cargando calificación"
     >
-      <UiSkeleton class="h-6 w-24" />
-      <UiSkeleton class="h-16" />
+      <USkeleton
+        class="h-6 w-24"
+      />
+      <USkeleton
+        class="h-16"
+      />
     </div>
     <div
       v-else
       class="grid gap-4 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center"
     >
       <div class="grid gap-1">
-        <span class="text-3xl font-semibold tabular-nums tracking-tight text-ink">{{ formatRating(stats.averageRating) }}</span>
+        <span class="text-3xl font-semibold tabular-nums tracking-tight text-highlighted">{{ formatRating(stats.averageRating) }}</span>
         <RatingStars
           :rating="stats.averageRating"
           size="md"
         />
-        <span class="text-xs text-ink-muted">
+        <span class="text-xs text-muted">
           {{ stats.reviewCount ? `${stats.reviewCount} publicada(s) en la tienda` : 'Sin reseñas publicadas' }}
         </span>
       </div>
@@ -64,10 +68,10 @@ defineExpose({ load })
         <li
           v-for="star in [5, 4, 3, 2, 1]"
           :key="star"
-          class="grid grid-cols-[1.5rem_minmax(0,1fr)_2rem] items-center gap-2 text-xs tabular-nums text-ink-muted"
+          class="grid grid-cols-[1.5rem_minmax(0,1fr)_2rem] items-center gap-2 text-xs tabular-nums text-muted"
         >
           <span>{{ star }}★</span>
-          <span class="h-2 overflow-hidden rounded-full bg-surface">
+          <span class="h-2 overflow-hidden rounded-full bg-muted">
             <span
               class="block h-full rounded-full bg-warning"
               :style="{ width: `${percent(stats.ratingDistribution[star] ?? 0)}%` }"

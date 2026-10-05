@@ -10,7 +10,6 @@ const emit = defineEmits<{ requested: [invoice: Invoice], cancel: [] }>()
 
 const api = useInvoicesApi()
 const fiscal = useFiscalStore()
-const uid = useId()
 
 const values = reactive({ fiscalDataId: '', usoCFDI: DEFAULT_USO_CFDI })
 const pending = ref(false)
@@ -56,19 +55,26 @@ async function onSubmit() {
     v-if="!fiscal.loaded && fiscal.pending"
     class="grid gap-3"
   >
-    <UiSkeleton class="h-11" />
-    <UiSkeleton class="h-11" />
+    <USkeleton
+      class="h-11"
+    />
+    <USkeleton
+      class="h-11"
+    />
   </div>
 
-  <UiAlert v-else-if="fiscal.error">
-    {{ fiscal.error }}
-  </UiAlert>
+  <UAlert
+    v-else-if="fiscal.error"
+    color="error"
+    icon="ph:warning-circle"
+    :title="fiscal.error"
+  />
 
   <div
     v-else-if="addingProfile"
     class="grid gap-4"
   >
-    <p class="text-sm text-ink-muted">
+    <p class="text-sm text-muted">
       {{ fiscal.items.length ? 'Agrega otro RFC para esta factura.' : 'Para facturar necesitamos tus datos fiscales. Se guardan en tu cuenta para la próxima vez.' }}
     </p>
     <FiscalProfileForm
@@ -83,73 +89,53 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-fiscal`"
-      v-slot="field"
+    <UFormField
       label="Datos fiscales"
-      :hint="selected ? regimenLabel(selected.regimenFiscal) : undefined"
+      :help="selected ? regimenLabel(selected.regimenFiscal) : undefined"
     >
-      <UiSelect
-        :id="field.id"
+      <USelect
         v-model="values.fiscalDataId"
-        :aria-describedby="field.describedBy"
-      >
-        <option
-          v-for="profile in fiscal.sorted"
-          :key="profile.id"
-          :value="profile.id"
-        >
-          {{ profile.rfc }} · {{ profile.razonSocial }}
-        </option>
-      </UiSelect>
-    </UiField>
-    <button
-      type="button"
-      class="-mt-3 justify-self-start text-[13px] text-accent underline-offset-2 hover:underline"
+        :items="fiscal.sorted.map(profile => ({ label: `${profile.rfc} · ${profile.razonSocial}`, value: profile.id }))"
+      />
+    </UFormField>
+    <UButton
+      variant="link"
+      size="sm"
+      label="Usar otro RFC"
+      class="-mt-3 justify-self-start px-0"
       @click="addingProfile = true"
-    >
-      Usar otro RFC
-    </button>
+    />
 
-    <UiField
-      :id="`${uid}-uso`"
-      v-slot="field"
+    <UFormField
       label="Uso del CFDI"
-      hint="Si no sabes cuál elegir, «Gastos en general» es el más común."
+      help="Si no sabes cuál elegir, «Gastos en general» es el más común."
     >
-      <UiSelect
-        :id="field.id"
+      <USelect
         v-model="values.usoCFDI"
-        :aria-describedby="field.describedBy"
-      >
-        <option
-          v-for="uso in USO_CFDI_OPTIONS"
-          :key="uso.value"
-          :value="uso.value"
-        >
-          {{ uso.value }} · {{ uso.label }}
-        </option>
-      </UiSelect>
-    </UiField>
+        :items="USO_CFDI_OPTIONS.map(uso => ({ label: `${uso.value} · ${uso.label}`, value: uso.value }))"
+      />
+    </UFormField>
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        Solicitar factura
-      </UiButton>
-      <UiButton
-        variant="secondary"
+        label="Solicitar factura"
+      />
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

@@ -67,115 +67,115 @@ function clearFilters() {
 <template>
   <div class="grid gap-8">
     <div class="grid gap-3">
-      <NuxtLink
+      <UButton
         :to="INVENTORY_ROUTES.stock"
-        class="inline-flex items-center gap-1.5 justify-self-start rounded-md text-sm text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
-      >
-        <Icon
-          name="ph:arrow-left"
-          class="size-4"
-          aria-hidden="true"
-        />
-        Existencias
-      </NuxtLink>
-      <UiPageHeader
+        color="neutral"
+        variant="link"
+        icon="ph:arrow-left"
+        label="Existencias"
+        class="justify-self-start px-0"
+      />
+      <UPageHeader
         :title="variant?.productName ?? 'Inventario de variante'"
         description="Registra entradas, salidas y conteos. Cada cambio queda en el kardex."
       />
     </div>
 
-    <UiAlert v-if="error">
-      {{ error.status === 404 ? 'Esta variante no existe o no tiene inventario.' : error.message }}
-      <button
-        v-if="error.status !== 404"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="load"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="error.status === 404 ? 'Esta variante no existe o no tiene inventario.' : error.message"
+      :actions="error.status !== 404 ? retryAction(load) : undefined"
+      orientation="horizontal"
+    />
 
-    <UiPanel v-else-if="pending && !variant">
+    <UCard
+      v-else-if="pending && !variant"
+    >
       <div
         class="grid gap-6 md:grid-cols-[7rem_minmax(0,1fr)]"
         role="status"
         aria-label="Cargando variante"
       >
-        <UiSkeleton class="aspect-[4/5] w-28" />
+        <USkeleton
+          class="aspect-[4/5] w-28"
+        />
         <div class="grid content-start gap-4">
-          <UiSkeleton class="h-6 w-40" />
-          <UiSkeleton class="h-4 w-2/3" />
-          <UiSkeleton class="h-24" />
+          <USkeleton
+            class="h-6 w-40"
+          />
+          <USkeleton
+            class="h-4 w-2/3"
+          />
+          <USkeleton
+            class="h-24"
+          />
         </div>
       </div>
-    </UiPanel>
+    </UCard>
 
     <VariantStockHeader
       v-else-if="variant"
       :variant="variant"
     >
       <template #actions>
-        <UiButton
+        <UButton
           icon="ph:tray-arrow-down"
+          label="Registrar entrada"
           @click="open('entry')"
-        >
-          Registrar entrada
-        </UiButton>
-        <UiButton
-          variant="secondary"
+        />
+        <UButton
+          color="neutral"
+          variant="outline"
           icon="ph:tray-arrow-up"
           :disabled="variant.availableStock <= 0"
           :title="variant.availableStock <= 0 ? 'No hay unidades disponibles para sacar.' : undefined"
+          label="Salida / merma"
           @click="open('exit')"
-        >
-          Salida / merma
-        </UiButton>
-        <UiButton
-          variant="secondary"
+        />
+        <UButton
+          color="neutral"
+          variant="outline"
           icon="ph:clipboard-text"
+          label="Conteo físico"
           @click="open('count')"
-        >
-          Conteo físico
-        </UiButton>
+        />
       </template>
     </VariantStockHeader>
 
-    <UiAlert
+    <UAlert
       v-if="notice"
-      tone="info"
-    >
-      {{ notice }}
-    </UiAlert>
+      color="primary"
+      icon="ph:info"
+      :title="notice"
+    />
 
-    <UiPanel
+    <UCard
       v-if="!error"
       title="Kardex"
       description="Historial de movimientos de esta variante, del más reciente al más antiguo."
     >
       <div class="grid gap-5">
         <MovementsFilters
-          id="variant-movements"
           v-model:type="movements.filters.type"
           v-model:date-from="movements.filters.dateFrom"
           v-model:date-to="movements.filters.dateTo"
           @clear="clearFilters"
         />
 
-        <UiAlert v-if="movements.error">
-          {{ movements.error }}
-          <button
-            type="button"
-            class="ml-1 font-medium underline underline-offset-2"
-            @click="movements.load()"
-          >
-            Reintentar
-          </button>
-        </UiAlert>
+        <UAlert
+          v-if="movements.error"
+          color="error"
+          icon="ph:warning-circle"
+          :title="movements.error"
+          :actions="retryAction(() => movements.load())"
+          orientation="horizontal"
+        />
 
         <MovementsTableSkeleton v-if="movements.pending && !page" />
 
-        <UiEmptyState
+        <UEmpty
           v-else-if="page && !page.items.length"
           icon="ph:clock-counter-clockwise"
           :title="filtered ? 'Sin resultados' : 'Sin movimientos'"
@@ -188,39 +188,40 @@ function clearFilters() {
           :pending="movements.pending"
         />
 
-        <UiPagination
+        <PagePagination
           v-if="page"
-          :page="page.page"
-          :total-pages="page.totalPages"
-          :total-elements="page.totalElements"
+          :page="page"
           :disabled="movements.pending"
           @change="movements.load"
         />
       </div>
-    </UiPanel>
+    </UCard>
 
-    <UiModal
+    <UModal
       v-if="variant"
       v-model:open="modalOpen"
       :title="action ? modalCopy[action].title : ''"
       :description="action ? modalCopy[action].description : undefined"
     >
-      <StockCountForm
-        v-if="action === 'count'"
-        :variant-id="variantId"
-        :levels="variant"
-        @saved="onSaved"
-        @cancel="action = null"
-      />
-      <StockAdjustForm
-        v-else-if="action"
-        :key="action"
-        :variant-id="variantId"
-        :levels="variant"
-        :mode="action"
-        @saved="onSaved"
-        @cancel="action = null"
-      />
-    </UiModal>
+      <template #body>
+        <StockCountForm
+          v-if="action === 'count'"
+          :variant-id="variantId"
+          :levels="variant"
+          @saved="onSaved"
+          @cancel="action = null"
+        />
+        <StockAdjustForm
+          v-else-if="action"
+          :key="action"
+          :variant-id="variantId"
+          :levels="variant"
+          :mode="action"
+          @saved="onSaved"
+          @cancel="action = null"
+        />
+    
+      </template>
+    </UModal>
   </div>
 </template>

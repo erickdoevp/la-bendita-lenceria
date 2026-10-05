@@ -22,16 +22,15 @@ const files = computed({
 
 <template>
   <div class="grid gap-3">
-    <p class="flex items-center gap-2.5 text-sm font-medium text-ink">
+    <p class="flex items-center gap-2.5 text-sm font-medium text-highlighted">
       <ColorSwatch
         :hex="hex"
         size="sm"
       />
       {{ name }}
-      <span class="font-normal text-ink-muted">{{ files.length }} {{ files.length === 1 ? 'foto' : 'fotos' }}</span>
+      <span class="font-normal text-muted">{{ files.length }} {{ files.length === 1 ? 'foto' : 'fotos' }}</span>
     </p>
-    <UiImagePicker
-      :id="`color-gallery-${colorId}`"
+    <ImagePicker
       v-model="files"
       multiple
       compact

@@ -73,7 +73,11 @@ function createAnother() {
       v-if="draft.formError"
       ref="alert"
     >
-      <UiAlert>{{ draft.formError }}</UiAlert>
+      <UAlert
+        color="error"
+        icon="ph:warning-circle"
+        :title="draft.formError"
+      />
     </div>
 
     <ProductBasicsSection />

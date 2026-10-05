@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Órdenes"
       description="Pedidos de la tienda. Usa las pestañas para ver lo que falta cobrar, preparar, enviar o entregar."
     />

@@ -9,7 +9,6 @@ const api = useOrdersApi()
 const { formError, applyApiError } = useFormErrors()
 const code = ref('')
 const pending = ref(false)
-const uid = useId()
 
 // El backend no verifica el codigo: la comparacion se hace aqui
 const expected = computed(() => props.order.pickupCode?.toUpperCase() ?? null)
@@ -39,53 +38,50 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
+    <UFormField
       v-if="expected"
-      :id="`${uid}-code`"
-      v-slot="field"
       label="Código que presenta la clienta"
-      :hint="`Debe coincidir con el de la orden (${expected.length} caracteres).`"
+      :help="`Debe coincidir con el de la orden (${expected.length} caracteres).`"
       :error="mismatch ? 'El código no coincide con el de esta orden.' : undefined"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="code"
         class="font-mono uppercase tracking-[0.2em]"
         :maxlength="expected.length"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         autocomplete="off"
         spellcheck="false"
         autofocus
       />
-    </UiField>
-    <UiAlert
+    </UFormField>
+    <UAlert
       v-else
-      tone="info"
-    >
-      Esta orden no tiene código de recogida. Verifica la identidad de la clienta antes de entregar.
-    </UiAlert>
+      color="primary"
+      icon="ph:info"
+      title="Esta orden no tiene código de recogida. Verifica la identidad de la clienta antes de entregar."
+    />
 
     <div class="flex flex-wrap justify-end gap-2">
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
-      <UiButton
+      />
+      <UButton
         type="submit"
         icon="ph:hand-arrow-down"
         :loading="pending"
         :disabled="!matches"
-      >
-        Marcar entregada
-      </UiButton>
+        label="Marcar entregada"
+      />
     </div>
   </form>
 </template>

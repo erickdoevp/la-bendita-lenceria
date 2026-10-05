@@ -12,6 +12,11 @@ const inactiveNotice = ref<string | null>(null)
 
 const percent = (rate: number) => `${Number((rate * 100).toFixed(2))} %`
 
+const taxItems = computed(() => taxes.items.map(tax => ({
+  label: `${tax.name} (${percent(tax.rate)})${tax.active ? ', global' : ''}`,
+  value: tax.id,
+})))
+
 function onCategoryCreated(category: Category) {
   categoryModal.value = false
   // Las inactivas no salen en el arbol, asi que no se pueden asignar todavia
@@ -26,136 +31,109 @@ function onCategoryCreated(category: Category) {
 </script>
 
 <template>
-  <UiPanel
+  <UCard
     title="Precio y clasificación"
     description="El precio de cada variante es el precio base más su ajuste."
   >
     <div class="grid gap-5 md:grid-cols-2">
-      <UiField
-        id="product-price"
-        v-slot="field"
+      <UFormField
         label="Precio base"
         :error="draft.fieldErrors.basePrice"
       >
-        <UiInput
-          :id="field.id"
-          v-model="draft.form.basePrice"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
+        <UInput
+          v-model.number="draft.form.basePrice"
           type="number"
           min="0"
           step="0.01"
           inputmode="decimal"
-          prefix="$"
           placeholder="0.00"
-        />
-      </UiField>
+        >
+          <template #leading>
+            <span class="text-muted">$</span>
+          </template>
+        </UInput>
+      </UFormField>
 
-      <UiField
-        id="product-tax"
-        v-slot="field"
+      <UFormField
         label="Impuesto"
-        hint="Por defecto, el IVA global activo."
+        help="Por defecto, el IVA global activo."
         :error="draft.fieldErrors.taxConfigId"
       >
-        <UiSkeleton
+        <USkeleton
           v-if="taxes.status === 'pending'"
-          class="h-11"
+          class="h-8"
         />
-        <UiSelect
+        <USelect
           v-else
-          :id="field.id"
           v-model="draft.form.taxConfigId"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
-        >
-          <option
-            v-if="!taxes.items.length"
-            value=""
-          >
-            Sin impuestos configurados
-          </option>
-          <option
-            v-for="tax in taxes.items"
-            :key="tax.id"
-            :value="tax.id"
-          >
-            {{ tax.name }} ({{ percent(tax.rate) }}){{ tax.active ? ', global' : '' }}
-          </option>
-        </UiSelect>
-      </UiField>
-
-      <div class="grid gap-2 md:col-span-2">
-        <div class="flex items-end justify-between gap-3">
-          <label
-            for="product-category"
-            class="text-sm font-medium text-ink"
-          >Categoría</label>
-          <UiButton
-            v-if="categories.options.length"
-            variant="ghost"
-            size="sm"
-            icon="ph:plus"
-            @click="categoryModal = true"
-          >
-            Nueva categoría
-          </UiButton>
-        </div>
-
-        <UiSkeleton
-          v-if="categories.status === 'pending'"
-          class="h-11"
+          :items="taxItems"
+          :placeholder="taxes.items.length ? 'Elige un impuesto' : 'Sin impuestos configurados'"
+          :disabled="!taxes.items.length"
         />
-        <UiEmptyState
+      </UFormField>
+
+      <UFormField
+        label="Categoría"
+        class="md:col-span-2"
+        :error="draft.fieldErrors.categoryId"
+        :help="inactiveNotice ?? undefined"
+      >
+        <template
+          v-if="categories.options.length"
+          #hint
+        >
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            icon="ph:plus"
+            label="Nueva categoría"
+            @click="categoryModal = true"
+          />
+        </template>
+
+        <USkeleton
+          v-if="categories.status === 'pending'"
+          class="h-8"
+        />
+        <UEmpty
           v-else-if="categories.status === 'ready' && !categories.options.length"
           icon="ph:tree-structure"
           title="No hay categorías activas"
           description="Todo artículo necesita una categoría. Crea la primera sin salir de aquí."
+          variant="outline"
         >
-          <UiButton
-            size="sm"
-            icon="ph:plus"
-            @click="categoryModal = true"
-          >
-            Crear categoría
-          </UiButton>
-        </UiEmptyState>
+          <template #actions>
+            <UButton
+              size="sm"
+              icon="ph:plus"
+              label="Crear categoría"
+              @click="categoryModal = true"
+            />
+          </template>
+        </UEmpty>
         <CategorySelect
           v-else
-          id="product-category"
           v-model="draft.form.categoryId"
-          :invalid="Boolean(draft.fieldErrors.categoryId)"
-          :aria-describedby="draft.fieldErrors.categoryId ? 'product-category-error' : undefined"
         />
 
         <p
-          v-if="draft.fieldErrors.categoryId"
-          id="product-category-error"
-          class="text-[13px] text-danger"
-        >
-          {{ draft.fieldErrors.categoryId }}
-        </p>
-        <p
-          v-else-if="inactiveNotice"
-          class="text-[13px] text-ink-muted"
-        >
-          {{ inactiveNotice }}
-        </p>
-        <p
-          v-else-if="categories.error"
-          class="text-[13px] text-danger"
+          v-if="categories.error"
+          class="mt-2 text-sm text-error"
         >
           {{ categories.error }}
         </p>
-      </div>
+      </UFormField>
     </div>
 
-    <UiModal
+    <UModal
       v-model:open="categoryModal"
       title="Nueva categoría"
       description="Quedará seleccionada para este artículo."
     >
-      <CategoryForm @saved="onCategoryCreated" />
-    </UiModal>
-  </UiPanel>
+      <template #body>
+        <CategoryForm @saved="onCategoryCreated" />
+      </template>
+    </UModal>
+  </UCard>
 </template>

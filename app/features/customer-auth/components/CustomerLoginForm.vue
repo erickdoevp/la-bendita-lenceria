@@ -26,43 +26,36 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      id="login-user"
-      v-slot="field"
+    <UFormField
       label="Usuario o correo"
       :error="fieldErrors.usernameOrEmail"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.usernameOrEmail"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         :disabled="pending"
         autocomplete="username"
         autocapitalize="none"
         spellcheck="false"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      id="login-password"
-      v-slot="field"
+    <UFormField
       label="Contraseña"
       :error="fieldErrors.password"
     >
       <PasswordInput
-        :id="field.id"
         v-model="values.password"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         :disabled="pending"
         autocomplete="current-password"
       />
-    </UiField>
+    </UFormField>
 
     <TurnstileWidget
       v-if="turnstile.enabled"
@@ -73,12 +66,11 @@ async function onSubmit() {
       @error="turnstile.token.value = null"
     />
 
-    <UiButton
+    <UButton
       type="submit"
       class="mt-1"
       :loading="pending"
-    >
-      {{ pending ? 'Entrando' : 'Iniciar sesión' }}
-    </UiButton>
+      :label="pending ? 'Entrando' : 'Iniciar sesión'"
+    />
   </form>
 </template>

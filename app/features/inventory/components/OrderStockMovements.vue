@@ -33,31 +33,36 @@ defineExpose({ load })
 </script>
 
 <template>
-  <UiPanel
-    title="Inventario"
-    description="Movimientos de stock de esta orden. Un pedido sin pagar solo aparta stock y no aparece aquí."
-  >
-    <template #actions>
-      <UiButton
-        variant="ghost"
-        size="sm"
-        icon="ph:arrows-down-up"
-        :to="{ path: INVENTORY_ROUTES.movements, query: { orderId } }"
-      >
-        Ver en kardex
-      </UiButton>
+  <UCard>
+    <template #header>
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="grid gap-1">
+          <h2 class="font-semibold tracking-tight text-highlighted">
+            Inventario
+          </h2>
+          <p class="max-w-[65ch] text-sm leading-relaxed text-muted">
+            Movimientos de stock de esta orden. Un pedido sin pagar solo aparta stock y no aparece aquí.
+          </p>
+        </div>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            icon="ph:arrows-down-up"
+            :to="{ path: INVENTORY_ROUTES.movements, query: { orderId } }"
+            label="Ver en kardex"
+          />
+      </div>
     </template>
 
-    <UiAlert v-if="error">
-      {{ error }}
-      <button
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="load"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="error"
+      :actions="retryAction(load)"
+      orientation="horizontal"
+    />
 
     <MovementsTableSkeleton
       v-else-if="pending && !items"
@@ -66,7 +71,7 @@ defineExpose({ load })
 
     <p
       v-else-if="items && !items.length"
-      class="text-sm text-ink-muted"
+      class="text-sm text-muted"
     >
       Sin movimientos de stock.
     </p>
@@ -78,5 +83,5 @@ defineExpose({ load })
       show-variant
       hide-order
     />
-  </UiPanel>
+  </UCard>
 </template>

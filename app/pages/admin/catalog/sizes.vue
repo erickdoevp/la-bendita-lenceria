@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Tallas"
       description="Catálogo global de tallas. Se combinan con los colores para formar las variantes."
     />

@@ -1,3 +1,4 @@
+import type { BadgeProps } from '@nuxt/ui'
 import type { CouponStatus } from './types'
 
 export const COUPON_ROUTES = {
@@ -13,11 +14,11 @@ export const COUPON_STATUS_LABELS: Record<CouponStatus, string> = {
   EXHAUSTED: 'Agotado',
 }
 
-export const COUPON_STATUS_CLASSES: Record<CouponStatus, string> = {
-  ACTIVE: 'bg-success-soft text-success',
-  INACTIVE: 'bg-surface text-ink-muted',
-  EXPIRED: 'bg-warning-soft text-warning',
-  EXHAUSTED: 'bg-danger-soft text-danger',
+export const COUPON_STATUS_COLORS: Record<CouponStatus, BadgeProps['color']> = {
+  ACTIVE: 'success',
+  INACTIVE: 'neutral',
+  EXPIRED: 'warning',
+  EXHAUSTED: 'error',
 }
 
 /** Filtros del listado: el backend no filtra, se hace en el front. */

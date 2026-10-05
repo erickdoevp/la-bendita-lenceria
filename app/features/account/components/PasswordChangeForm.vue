@@ -46,69 +46,60 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      id="password-current"
-      v-slot="field"
+    <UFormField
       label="Contraseña actual"
       :error="fieldErrors.currentPassword"
     >
       <PasswordInput
-        :id="field.id"
         v-model="values.currentPassword"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         autocomplete="current-password"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      id="password-new"
-      v-slot="field"
+    <UFormField
       label="Nueva contraseña"
       :error="fieldErrors.newPassword"
     >
       <PasswordInput
-        :id="field.id"
         v-model="values.newPassword"
-        :invalid="field.invalid"
-        :aria-describedby="[field.describedBy, 'password-new-rules'].filter(Boolean).join(' ')"
+        aria-describedby="password-new-rules"
         autocomplete="new-password"
       />
       <PasswordChecklist
         id="password-new-rules"
+        class="mt-2"
         :password="values.newPassword"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      id="password-confirm"
-      v-slot="field"
+    <UFormField
       label="Repite la nueva contraseña"
       :error="fieldErrors.confirmPassword"
     >
       <PasswordInput
-        :id="field.id"
         v-model="values.confirmPassword"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         autocomplete="new-password"
       />
-    </UiField>
+    </UFormField>
 
-    <UiAlert tone="info">
-      Al cambiarla se cerrará tu sesión en todos tus dispositivos, también en este.
-    </UiAlert>
+    <UAlert
+      color="primary"
+      icon="ph:info"
+      title="Al cambiarla se cerrará tu sesión en todos tus dispositivos, también en este."
+    />
 
-    <UiButton
+    <UButton
       type="submit"
       class="justify-self-start"
       :loading="pending"
-    >
-      Cambiar contraseña
-    </UiButton>
+      label="Cambiar contraseña"
+    />
   </form>
 </template>

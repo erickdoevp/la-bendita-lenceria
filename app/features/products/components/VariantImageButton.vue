@@ -8,6 +8,7 @@ const props = defineProps<{
 const file = defineModel<File | null>({ required: true })
 const url = useObjectUrl(file)
 const rejected = ref<string | null>(null)
+const input = ref<HTMLInputElement | null>(null)
 
 function onChange(event: Event) {
   const input = event.target as HTMLInputElement
@@ -29,45 +30,39 @@ function onChange(event: Event) {
       <img
         :src="url"
         :alt="`Foto propia: ${props.label}`"
-        class="size-9 rounded-lg border border-line object-cover"
+        class="size-8 rounded-md border border-default object-cover"
       >
-      <button
-        type="button"
-        class="grid size-8 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-danger focus-visible:outline-2 focus-visible:outline-accent"
+      <UButton
+        color="neutral"
+        variant="ghost"
+        icon="ph:x"
         :aria-label="`Quitar foto propia de ${props.label}`"
         @click="file = null"
-      >
-        <Icon
-          name="ph:x"
-          class="size-4"
-          aria-hidden="true"
-        />
-      </button>
-    </div>
-    <label
-      v-else
-      :for="id"
-      class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-xl border border-dashed border-line px-2.5 text-[13px] text-ink-muted transition-colors focus-within:border-accent focus-within:ring-3 focus-within:ring-accent/20 hover:border-ink-muted hover:text-ink"
-      :title="`Foto propia para ${props.label} (opcional)`"
-    >
-      <Icon
-        name="ph:camera-plus"
-        class="size-4"
-        aria-hidden="true"
       />
-      Foto
+    </div>
+    <template v-else>
+      <UButton
+        color="neutral"
+        variant="outline"
+        icon="ph:camera-plus"
+        label="Foto"
+        :title="`Foto propia para ${props.label} (opcional)`"
+        :aria-label="`Foto propia para ${props.label}`"
+        @click="input?.click()"
+      />
       <input
         :id="id"
+        ref="input"
         type="file"
         class="sr-only"
+        tabindex="-1"
         :accept="IMAGE_ACCEPT"
-        :aria-label="`Foto propia para ${props.label}`"
         @change="onChange"
       >
-    </label>
+    </template>
     <p
       v-if="rejected || error"
-      class="text-xs text-danger"
+      class="text-xs text-error"
     >
       {{ rejected ?? error }}
     </p>

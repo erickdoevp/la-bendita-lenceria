@@ -15,7 +15,6 @@ const api = useOrdersApi()
 const { fieldErrors, formError, validate, applyApiError, clearField } = useFormErrors()
 const values = reactive({ adminNotes: props.mode === 'notes' ? (props.order.adminNotes ?? '') : '' })
 const pending = ref(false)
-const uid = useId()
 
 const copy = computed(() => ({
   process: { label: 'Pasar a preparación', icon: 'ph:package', variant: 'primary' as const, field: 'Nota interna', placeholder: 'Empacado por Luis' },
@@ -60,57 +59,62 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiAlert v-if="mode === 'cancel' && paid">
-      Esta orden ya se cobró. Cancelar devuelve el stock pero <strong>no devuelve el dinero</strong>.
-      Si hay que regresarlo, usa <strong>Reembolsar</strong>. Cancela solo si el dinero ya se devolvió por fuera.
-    </UiAlert>
-    <UiAlert
-      v-else-if="mode === 'cancel'"
-      tone="info"
+    <UAlert
+      v-if="mode === 'cancel' && paid"
+      color="error"
+      icon="ph:warning-circle"
     >
-      Se libera el stock apartado y, si usó cupón, se le devuelve a la clienta. No se puede deshacer.
-    </UiAlert>
+      <template #title>
+        Esta orden ya se cobró. Cancelar devuelve el stock pero <strong>no devuelve el dinero</strong>.
+        Si hay que regresarlo, usa <strong>Reembolsar</strong>. Cancela solo si el dinero ya se devolvió por fuera.
+    
+      </template>
+    </UAlert>
+    <UAlert
+      v-else-if="mode === 'cancel'"
+      color="primary"
+      icon="ph:info"
+      title="Se libera el stock apartado y, si usó cupón, se le devuelve a la clienta. No se puede deshacer."
+    />
 
-    <UiField
-      :id="`${uid}-notes`"
-      v-slot="field"
+    <UFormField
       :label="copy.field"
-      :optional="mode !== 'cancel'"
-      :hint="mode === 'process' && order.adminNotes ? 'Si escribes algo, reemplaza la nota interna actual.' : undefined"
+      :hint="(mode !== 'cancel') ? 'Opcional' : undefined"
+      :help="mode === 'process' && order.adminNotes ? 'Si escribes algo, reemplaza la nota interna actual.' : undefined"
       :error="fieldErrors.adminNotes"
     >
-      <UiTextarea
-        :id="field.id"
+      <UTextarea
         v-model="values.adminNotes"
         class="min-h-24"
         maxlength="500"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         :placeholder="copy.placeholder"
         autofocus
+        autoresize
       />
-    </UiField>
+    </UFormField>
 
     <div class="flex flex-wrap justify-end gap-2">
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        :label="mode === 'cancel' ? 'No cancelar' : 'Cancelar'"
         @click="emit('cancel')"
-      >
-        {{ mode === 'cancel' ? 'No cancelar' : 'Cancelar' }}
-      </UiButton>
-      <UiButton
+      />
+      <UButton
         type="submit"
-        :variant="copy.variant"
+        :color="copy.variant === 'danger' ? 'error' : 'primary'"
         :icon="copy.icon"
         :loading="pending"
-      >
-        {{ copy.label }}
-      </UiButton>
+        :label="copy.label"
+      />
     </div>
   </form>
 </template>

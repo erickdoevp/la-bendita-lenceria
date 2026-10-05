@@ -13,7 +13,7 @@ const initials = computed(() =>
 
 <template>
   <span
-    class="grid shrink-0 place-items-center overflow-hidden rounded-full bg-accent/10 font-medium text-accent"
+    class="grid shrink-0 place-items-center overflow-hidden rounded-full bg-primary/10 font-medium text-primary"
     :class="size === 'sm' ? 'size-8 text-xs' : 'size-20 text-xl'"
     aria-hidden="true"
   >

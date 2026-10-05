@@ -28,157 +28,116 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      id="register-name"
-      v-slot="field"
+    <UFormField
       label="Nombre"
       :error="fieldErrors.name"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.name"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         autocomplete="given-name"
       />
-    </UiField>
+    </UFormField>
 
     <div class="grid gap-5 sm:grid-cols-2 sm:gap-4">
-      <UiField
-        id="register-last-name"
-        v-slot="field"
+      <UFormField
         label="Primer apellido"
         :error="fieldErrors.firstLastName"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.firstLastName"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autocomplete="family-name"
         />
-      </UiField>
-      <UiField
-        id="register-second-last-name"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Segundo apellido"
-        optional
         :error="fieldErrors.secondLastName"
+        hint="Opcional"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.secondLastName"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
         />
-      </UiField>
+      </UFormField>
     </div>
 
-    <UiField
-      id="register-email"
-      v-slot="field"
+    <UFormField
       label="Correo"
       :error="fieldErrors.email"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.email"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         type="email"
         autocomplete="email"
         autocapitalize="none"
         spellcheck="false"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      id="register-phone"
-      v-slot="field"
+    <UFormField
       label="Teléfono"
-      optional
       :error="fieldErrors.phoneNumber"
+      hint="Opcional"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.phoneNumber"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         type="tel"
         inputmode="tel"
         autocomplete="tel-national"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      id="register-username"
-      v-slot="field"
+    <UFormField
       label="Nombre de usuario"
-      hint="De 4 a 20 caracteres. Aparece en tus reseñas y no se puede cambiar."
+      help="De 4 a 20 caracteres. Aparece en tus reseñas y no se puede cambiar."
       :error="fieldErrors.username"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.username"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         autocomplete="username"
         autocapitalize="none"
         spellcheck="false"
         maxlength="20"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      id="register-password"
-      v-slot="field"
+    <UFormField
       label="Contraseña"
       :error="fieldErrors.password"
     >
       <PasswordInput
-        :id="field.id"
         v-model="values.password"
-        :invalid="field.invalid"
-        :aria-describedby="[field.describedBy, 'register-password-rules'].filter(Boolean).join(' ')"
+        aria-describedby="register-password-rules"
         autocomplete="new-password"
       />
       <PasswordChecklist
         id="register-password-rules"
+        class="mt-2"
         :password="values.password"
       />
-    </UiField>
+    </UFormField>
 
-    <div class="grid gap-2">
-      <label class="flex items-start gap-3 text-sm leading-relaxed text-ink">
-        <input
-          v-model="values.acceptedPrivacyPolicy"
-          type="checkbox"
-          class="mt-0.5 size-4 shrink-0 accent-[var(--accent)]"
-          :aria-invalid="Boolean(fieldErrors.acceptedPrivacyPolicy) || undefined"
-          :aria-describedby="fieldErrors.acceptedPrivacyPolicy ? 'register-privacy-error' : undefined"
-        >
-        <span>
+    <UFormField :error="fieldErrors.acceptedPrivacyPolicy">
+      <UCheckbox
+        v-model="values.acceptedPrivacyPolicy"
+        :ui="{ label: 'font-normal leading-relaxed' }"
+      >
+        <template #label>
           He leído y acepto el
           <!-- TODO: enlazar a la pagina del Aviso de Privacidad cuando exista -->
           <NuxtLink
             to="/aviso-de-privacidad"
             target="_blank"
-            class="font-medium text-accent underline-offset-2 hover:underline"
+            class="font-medium text-primary underline-offset-2 hover:underline"
           >Aviso de Privacidad</NuxtLink>.
-        </span>
-      </label>
-      <p
-        v-if="fieldErrors.acceptedPrivacyPolicy"
-        id="register-privacy-error"
-        class="text-[13px] text-danger"
-      >
-        {{ fieldErrors.acceptedPrivacyPolicy }}
-      </p>
-    </div>
+        </template>
+      </UCheckbox>
+    </UFormField>
 
     <TurnstileWidget
       v-if="turnstile.enabled"
@@ -189,12 +148,11 @@ async function onSubmit() {
       @error="turnstile.token.value = null"
     />
 
-    <UiButton
+    <UButton
       type="submit"
       class="mt-1"
       :loading="pending"
-    >
-      {{ pending ? 'Creando tu cuenta' : 'Crear cuenta' }}
-    </UiButton>
+      :label="pending ? 'Creando tu cuenta' : 'Crear cuenta'"
+    />
   </form>
 </template>

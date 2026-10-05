@@ -24,68 +24,63 @@ watch(values, () => {
 </script>
 
 <template>
-  <div class="grid gap-3 rounded-xl bg-surface p-4">
-    <p class="text-sm font-medium text-ink">
+  <div class="grid gap-3 rounded-lg bg-muted p-4">
+    <p class="text-sm font-medium text-highlighted">
       Rellenar todas las variantes
     </p>
     <div class="grid grid-cols-2 items-end gap-3 sm:grid-cols-[repeat(3,minmax(0,1fr))_auto]">
-      <div class="grid gap-1">
-        <label
-          for="bulk-adjustment"
-          class="text-xs text-ink-muted"
-        >Ajuste</label>
-        <UiInput
-          id="bulk-adjustment"
-          v-model="values.priceAdjustment"
-          size="sm"
+      <UFormField
+        label="Ajuste"
+        :ui="{ label: 'text-xs font-normal text-muted' }"
+      >
+        <UInput
+          v-model.number="values.priceAdjustment"
           type="number"
           step="0.01"
-          prefix="$"
-        />
-      </div>
-      <div class="grid gap-1">
-        <label
-          for="bulk-cost"
-          class="text-xs text-ink-muted"
-        >Costo</label>
-        <UiInput
-          id="bulk-cost"
-          v-model="values.costPrice"
-          size="sm"
+        >
+          <template #leading>
+            <span class="text-muted">$</span>
+          </template>
+        </UInput>
+      </UFormField>
+      <UFormField
+        label="Costo"
+        :ui="{ label: 'text-xs font-normal text-muted' }"
+      >
+        <UInput
+          v-model.number="values.costPrice"
           type="number"
           min="0"
           step="0.01"
-          prefix="$"
-        />
-      </div>
-      <div class="grid gap-1">
-        <label
-          for="bulk-stock"
-          class="text-xs text-ink-muted"
-        >Stock inicial</label>
-        <UiInput
-          id="bulk-stock"
-          v-model="values.initialStock"
-          size="sm"
+        >
+          <template #leading>
+            <span class="text-muted">$</span>
+          </template>
+        </UInput>
+      </UFormField>
+      <UFormField
+        label="Stock inicial"
+        :ui="{ label: 'text-xs font-normal text-muted' }"
+      >
+        <UInput
+          v-model.number="values.initialStock"
           type="number"
           min="0"
           step="1"
         />
-      </div>
-      <UiButton
-        variant="secondary"
-        size="sm"
-        class="h-10"
+      </UFormField>
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="!Object.keys(filled).length"
+        label="Aplicar"
         @click="apply"
-      >
-        Aplicar
-      </UiButton>
+      />
     </div>
     <p
       v-if="message"
       role="status"
-      class="text-[13px] text-ink-muted"
+      class="text-sm text-muted"
     >
       {{ message }}
     </p>

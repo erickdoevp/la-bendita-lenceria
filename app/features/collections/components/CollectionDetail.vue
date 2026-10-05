@@ -85,73 +85,66 @@ function onProductsAdded(count: number) {
 <template>
   <div class="grid gap-8">
     <div class="grid gap-3">
-      <NuxtLink
+      <UButton
         :to="COLLECTION_ROUTES.list"
-        class="inline-flex items-center gap-1.5 justify-self-start rounded-md text-sm text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
-      >
-        <Icon
-          name="ph:arrow-left"
-          class="size-4"
-          aria-hidden="true"
-        />
-        Colecciones
-      </NuxtLink>
+        color="neutral"
+        variant="link"
+        icon="ph:arrow-left"
+        label="Colecciones"
+        class="justify-self-start px-0"
+      />
 
-      <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div class="grid gap-2">
-          <div class="flex flex-wrap items-center gap-3">
-            <h1 class="text-2xl font-semibold tracking-tight text-ink md:text-3xl">
-              {{ collection?.name ?? 'Colección' }}
-            </h1>
-            <span
+      <UPageHeader :ui="{ description: 'font-mono text-sm' }">
+        <template #title>
+          <span class="flex flex-wrap items-center gap-3">
+            {{ collection?.name ?? 'Colección' }}
+            <UBadge
               v-if="collection"
-              class="inline-flex rounded-lg px-2 py-1 text-xs font-medium"
-              :class="collection.active ? 'bg-success-soft text-success' : 'bg-surface text-ink-muted'"
-            >{{ collection.active ? 'Visible' : 'Oculta' }}</span>
-          </div>
-          <p
-            v-if="collection"
-            class="font-mono text-sm text-ink-muted"
-          >
-            {{ STORE_COLLECTION_PATH }}/{{ collection.slug }}
-          </p>
-        </div>
+              :color="collection.active ? 'success' : 'neutral'"
+              :label="collection.active ? 'Visible' : 'Oculta'"
+            />
+          </span>
+        </template>
 
-        <div
+        <template
           v-if="collection"
-          class="flex flex-wrap gap-2"
+          #description
         >
-          <UiButton
-            variant="secondary"
+          {{ STORE_COLLECTION_PATH }}/{{ collection.slug }}
+        </template>
+
+        <template
+          v-if="collection"
+          #links
+        >
+          <UButton
+            color="neutral"
+            variant="outline"
             :icon="collection.active ? 'ph:eye-slash' : 'ph:eye'"
             :loading="toggling"
+            :label="collection.active ? 'Ocultar' : 'Publicar'"
             @click="onToggleActive"
-          >
-            {{ collection.active ? 'Ocultar' : 'Publicar' }}
-          </UiButton>
-          <UiButton
-            variant="danger"
+          />
+          <UButton
+            color="error"
+            variant="soft"
             icon="ph:trash"
             :disabled="toggling"
+            label="Eliminar"
             @click="deleteOpen = true"
-          >
-            Eliminar
-          </UiButton>
-        </div>
-      </header>
+          />
+        </template>
+      </UPageHeader>
     </div>
 
-    <UiAlert v-if="error">
-      {{ error.status === 404 ? 'Esta colección no existe.' : error.message }}
-      <button
-        v-if="error.status !== 404"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="load"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="error.status === 404 ? 'Esta colección no existe.' : error.message"
+      :actions="error.status !== 404 ? retryAction(load) : undefined"
+      orientation="horizontal"
+    />
 
     <div
       v-else-if="pending && !collection"
@@ -159,20 +152,27 @@ function onProductsAdded(count: number) {
       role="status"
       aria-label="Cargando colección"
     >
-      <UiSkeleton class="h-96 rounded-2xl" />
-      <UiSkeleton class="h-96 rounded-2xl" />
+      <USkeleton
+        class="h-96 rounded-lg"
+      />
+      <USkeleton
+        class="h-96 rounded-lg"
+      />
     </div>
 
     <template v-else-if="collection">
-      <UiAlert v-if="actionError">
-        {{ actionError }}
-      </UiAlert>
-      <UiAlert
+      <UAlert
+        v-if="actionError"
+        color="error"
+        icon="ph:warning-circle"
+        :title="actionError"
+      />
+      <UAlert
         v-else-if="notice"
-        tone="info"
-      >
-        {{ notice }}
-      </UiAlert>
+        color="primary"
+        icon="ph:info"
+        :title="notice"
+      />
 
       <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <CollectionProductsPanel
@@ -181,7 +181,7 @@ function onProductsAdded(count: number) {
           :remove="removeProducts"
           @add="pickerOpen = true"
         />
-        <UiPanel
+        <UCard
           title="Datos"
           class="lg:sticky lg:top-6"
         >
@@ -191,45 +191,50 @@ function onProductsAdded(count: number) {
             @saved="onSaved"
             @cancel="formKey++"
           />
-        </UiPanel>
+        </UCard>
       </div>
 
-      <UiModal
+      <UModal
         v-model:open="pickerOpen"
         title="Agregar artículos"
         description="Se agregan al final, en el orden en que los elijas. Luego puedes reordenarlos."
       >
-        <CollectionProductPicker
-          :existing-ids="collection.products.map(p => p.id)"
-          :add="addProducts"
-          @done="onProductsAdded"
-          @cancel="pickerOpen = false"
-        />
-      </UiModal>
+        <template #body>
+          <CollectionProductPicker
+            :existing-ids="collection.products.map(p => p.id)"
+            :add="addProducts"
+            @done="onProductsAdded"
+            @cancel="pickerOpen = false"
+          />
+      
+        </template>
+      </UModal>
 
-      <UiModal
+      <UModal
         v-model:open="deleteOpen"
         :title="`Eliminar ${collection.name}`"
         description="Se borran la colección y su portada. Los artículos no se borran. No se puede deshacer; para ocultarla sin perderla usa Ocultar."
       >
-        <div class="flex flex-wrap justify-end gap-2">
-          <UiButton
-            variant="secondary"
-            :disabled="deleting"
-            @click="deleteOpen = false"
-          >
-            Cancelar
-          </UiButton>
-          <UiButton
-            variant="danger"
-            icon="ph:trash"
-            :loading="deleting"
-            @click="onDelete"
-          >
-            Sí, eliminar
-          </UiButton>
-        </div>
-      </UiModal>
+        <template #footer>
+          <div class="flex w-full flex-wrap justify-end gap-2">
+            <UButton
+              color="neutral"
+              variant="outline"
+              :disabled="deleting"
+              label="Cancelar"
+              @click="deleteOpen = false"
+            />
+            <UButton
+              color="error"
+              variant="soft"
+              icon="ph:trash"
+              :loading="deleting"
+              label="Sí, eliminar"
+              @click="onDelete"
+            />
+          </div>
+</template>
+      </UModal>
     </template>
   </div>
 </template>

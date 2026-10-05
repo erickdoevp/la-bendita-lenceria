@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Colores"
       description="Catálogo global de colores con su muestra para la tienda."
     />

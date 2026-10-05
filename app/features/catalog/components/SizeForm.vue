@@ -11,7 +11,6 @@ const { fieldErrors, formError, validate, applyApiError, clearField, reset } = u
 const values = reactive({ name: '', sortOrder: '' as string | number })
 const pending = ref(false)
 const isEdit = computed(() => Boolean(props.size))
-const uid = useId()
 
 function fill() {
   values.name = props.size?.name ?? ''
@@ -52,61 +51,53 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
     <div class="grid grid-cols-[minmax(0,1fr)_7rem] gap-4">
-      <UiField
-        :id="`${uid}-name`"
-        v-slot="field"
+      <UFormField
         label="Nombre"
-        hint="Corto, se usa tal cual en el SKU."
+        help="Corto, se usa tal cual en el SKU."
         :error="fieldErrors.name"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.name"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           placeholder="M"
           autocomplete="off"
         />
-      </UiField>
-      <UiField
-        :id="`${uid}-order`"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Orden"
         :error="fieldErrors.sortOrder"
       >
-        <UiInput
-          :id="field.id"
-          v-model="values.sortOrder"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
+        <UInput
+          v-model.number="values.sortOrder"
           type="number"
           min="1"
           step="1"
           inputmode="numeric"
         />
-      </UiField>
+      </UFormField>
     </div>
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        {{ isEdit ? 'Guardar cambios' : 'Crear talla' }}
-      </UiButton>
-      <UiButton
+        :label="isEdit ? 'Guardar cambios' : 'Crear talla'"
+      />
+      <UButton
         v-if="isEdit"
-        variant="secondary"
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

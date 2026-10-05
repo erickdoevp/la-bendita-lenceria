@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { BadgeProps, TableColumn } from '@nuxt/ui'
 import { CategorySelect, useCategoriesStore } from '~/features/catalog'
 import { PRODUCT_ROUTES, STATUS_LABELS } from '../constants'
 import { useProductsListStore } from '../stores/products-list.store'
@@ -12,13 +13,29 @@ const items = computed(() => page.value?.items ?? [])
 const filters = computed(() => store.list.filters)
 const filtered = computed(() => Boolean(filters.value.name || filters.value.status || filters.value.categoryId))
 
-const statusOptions = Object.entries(STATUS_LABELS) as [ProductStatus, string][]
 
-const statusClasses: Record<ProductStatus, string> = {
-  PUBLISHED: 'bg-accent/10 text-accent',
-  DRAFT: 'bg-surface text-ink',
-  ARCHIVED: 'bg-surface text-ink-muted',
+const search = useSearchTerm(() => store.list.filters.name, (value) => {
+  store.list.filters.name = value
+})
+const status = useSelectAll(store.list.filters, 'status')
+const statusItems = [
+  { label: 'Todos los estados', value: SELECT_ALL },
+  ...(Object.entries(STATUS_LABELS) as [ProductStatus, string][]).map(([value, label]) => ({ label, value })),
+]
+
+const statusColors: Record<ProductStatus, BadgeProps['color']> = {
+  PUBLISHED: 'primary',
+  DRAFT: 'neutral',
+  ARCHIVED: 'neutral',
 }
+
+const columns: TableColumn<ProductListItem>[] = [
+  { accessorKey: 'name', header: 'Artículo' },
+  { id: 'category', header: 'Categoría' },
+  { accessorKey: 'basePrice', header: 'Precio base', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { id: 'stock', header: 'Stock', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { accessorKey: 'status', header: 'Estado', meta: { class: { th: 'text-right', td: 'text-right' } } },
+]
 
 onMounted(() => {
   categories.fetchTree()
@@ -50,61 +67,37 @@ function stock(product: ProductListItem) {
 </script>
 
 <template>
-  <UiPanel>
+  <UCard>
     <div class="grid gap-5">
       <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem] lg:grid-cols-[minmax(0,1fr)_11rem_15rem]">
-        <UiSearch
-          id="products-search"
-          v-model="store.list.filters.name"
-          label="Buscar artículo"
+        <UInput
+          v-model="search"
+          type="search"
+          icon="ph:magnifying-glass"
+          placeholder="Buscar artículo"
+          aria-label="Buscar artículo"
           class="sm:col-span-2 lg:col-span-1"
         />
-        <div>
-          <label
-            for="products-status"
-            class="sr-only"
-          >Estado</label>
-          <UiSelect
-            id="products-status"
-            v-model="store.list.filters.status"
-            class="[&_select]:h-10 [&_select]:text-sm"
-          >
-            <option value="">
-              Todos los estados
-            </option>
-            <option
-              v-for="[value, label] in statusOptions"
-              :key="value"
-              :value="value"
-            >
-              {{ label }}
-            </option>
-          </UiSelect>
-        </div>
-        <div>
-          <label
-            for="products-category"
-            class="sr-only"
-          >Categoría</label>
-          <CategorySelect
-            id="products-category"
-            v-model="store.list.filters.categoryId"
-            empty-label="Todas las categorías"
-            class="[&_select]:h-10 [&_select]:text-sm"
-          />
-        </div>
+        <USelect
+          v-model="status"
+          :items="statusItems"
+          aria-label="Estado"
+        />
+        <CategorySelect
+          v-model="store.list.filters.categoryId"
+          empty-label="Todas las categorías"
+          aria-label="Categoría"
+        />
       </div>
 
-      <UiAlert v-if="store.list.error">
-        {{ store.list.error }}
-        <button
-          type="button"
-          class="ml-1 font-medium underline underline-offset-2"
-          @click="store.list.load()"
-        >
-          Reintentar
-        </button>
-      </UiAlert>
+      <UAlert
+        v-if="store.list.error"
+        color="error"
+        icon="ph:warning-circle"
+        :title="store.list.error"
+        :actions="retryAction(() => store.list.load())"
+        orientation="horizontal"
+      />
 
       <div
         v-if="store.list.pending && !page"
@@ -117,138 +110,116 @@ function stock(product: ProductListItem) {
           :key="row"
           class="flex items-center gap-4"
         >
-          <UiSkeleton class="h-14 w-11 shrink-0" />
+          <USkeleton
+            class="h-14 w-11 shrink-0"
+          />
           <div class="grid flex-1 gap-2">
-            <UiSkeleton class="h-4 w-2/5" />
-            <UiSkeleton class="h-3 w-1/4" />
+            <USkeleton
+              class="h-4 w-2/5"
+            />
+            <USkeleton
+              class="h-3 w-1/4"
+            />
           </div>
-          <UiSkeleton class="hidden h-4 w-20 sm:block" />
-          <UiSkeleton class="h-6 w-20" />
+          <USkeleton
+            class="hidden h-4 w-20 sm:block"
+          />
+          <USkeleton
+            class="h-6 w-20"
+          />
         </div>
       </div>
 
-      <UiEmptyState
+      <UEmpty
         v-else-if="page && !items.length"
         icon="ph:coat-hanger"
         :title="filtered ? 'Sin resultados' : 'Aún no hay artículos'"
         :description="filtered ? 'Ningún artículo coincide con estos filtros.' : 'Crea el primero con sus tallas, colores y fotos.'"
       >
-        <UiButton
-          v-if="filtered"
-          variant="secondary"
-          size="sm"
-          icon="ph:x"
-          @click="clearFilters"
-        >
-          Limpiar filtros
-        </UiButton>
-        <UiButton
-          v-else
-          size="sm"
-          icon="ph:plus"
-          :to="PRODUCT_ROUTES.create"
-        >
-          Nuevo artículo
-        </UiButton>
-      </UiEmptyState>
+        <template #actions>
+          <UButton
+            v-if="filtered"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            icon="ph:x"
+            label="Limpiar filtros"
+            @click="clearFilters"
+          />
+          <UButton
+            v-else
+            size="sm"
+            icon="ph:plus"
+            :to="PRODUCT_ROUTES.create"
+            label="Nuevo artículo"
+          />
+      
+        </template>
+      </UEmpty>
 
-      <div
+      <UTable
         v-else-if="items.length"
-        class="-mx-5 overflow-x-auto sm:-mx-6"
+        :data="items"
+        :columns="columns"
+        :class="['-mx-4 sm:-mx-6 transition-opacity', store.list.pending && 'opacity-60']"
+        :aria-busy="store.list.pending || undefined"
       >
-        <table class="w-full text-left text-sm">
-          <thead class="text-ink-muted">
-            <tr>
-              <th class="px-5 pb-3 font-medium sm:px-6">
-                Artículo
-              </th>
-              <th class="pb-3 pr-4 font-medium">
-                Categoría
-              </th>
-              <th class="pb-3 pr-4 text-right font-medium">
-                Precio base
-              </th>
-              <th class="pb-3 pr-4 text-right font-medium">
-                Stock
-              </th>
-              <th class="px-5 pb-3 text-right font-medium sm:px-6">
-                Estado
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="divide-y divide-line border-t border-line transition-opacity"
-            :class="store.list.pending && 'opacity-60'"
-            :aria-busy="store.list.pending || undefined"
-          >
-            <tr
-              v-for="product in items"
-              :key="product.id"
+        <template #name-cell="{ row }">
+          <div class="flex min-w-56 items-center gap-3">
+            <img
+              v-if="thumbnail(row.original)"
+              :src="thumbnail(row.original)!"
+              alt=""
+              loading="lazy"
+              class="aspect-[4/5] w-11 shrink-0 rounded-lg border border-default object-cover"
             >
-              <td class="px-5 py-3 sm:px-6">
-                <div class="flex min-w-56 items-center gap-3">
-                  <img
-                    v-if="thumbnail(product)"
-                    :src="thumbnail(product)!"
-                    alt=""
-                    loading="lazy"
-                    class="aspect-[4/5] w-11 shrink-0 rounded-lg border border-line object-cover"
-                  >
-                  <span
-                    v-else
-                    class="grid aspect-[4/5] w-11 shrink-0 place-items-center rounded-lg bg-surface text-ink-muted"
-                  >
-                    <Icon
-                      name="ph:image"
-                      class="size-4"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <span class="grid min-w-0">
-                    <span class="truncate font-medium text-ink">{{ product.name }}</span>
-                    <span class="truncate font-mono text-xs text-ink-muted">{{ product.slug }}</span>
-                  </span>
-                </div>
-              </td>
-              <td class="whitespace-nowrap py-3 pr-4 text-ink-muted">
-                {{ product.category?.name ?? 'Sin categoría' }}
-              </td>
-              <td class="whitespace-nowrap py-3 pr-4 text-right tabular-nums text-ink">
-                {{ formatMoney(product.basePrice) }}
-              </td>
-              <td class="whitespace-nowrap py-3 pr-4 text-right tabular-nums">
-                <template v-if="product.variants">
-                  <span :class="stock(product) ? 'text-ink' : 'font-medium text-danger'">{{ stock(product) }}</span>
-                  <span class="block text-xs text-ink-muted">
-                    {{ product.variants.length }} {{ product.variants.length === 1 ? 'variante' : 'variantes' }}
-                  </span>
-                </template>
-                <span
-                  v-else
-                  class="text-ink-muted"
-                >-</span>
-              </td>
-              <td class="px-5 py-3 text-right sm:px-6">
-                <span
-                  class="inline-flex rounded-lg px-2 py-1 text-xs font-medium"
-                  :class="statusClasses[product.status]"
-                >
-                  {{ STATUS_LABELS[product.status] }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <span
+              v-else
+              class="grid aspect-[4/5] w-11 shrink-0 place-items-center rounded-lg bg-muted text-muted"
+            >
+              <UIcon
+                name="ph:image"
+                class="size-4"
+              />
+            </span>
+            <span class="grid min-w-0">
+              <span class="truncate font-medium text-highlighted">{{ row.original.name }}</span>
+              <span class="truncate font-mono text-xs">{{ row.original.slug }}</span>
+            </span>
+          </div>
+        </template>
+        <template #category-cell="{ row }">
+          {{ row.original.category?.name ?? 'Sin categoría' }}
+        </template>
+        <template #basePrice-cell="{ row }">
+          <span class="tabular-nums text-highlighted">{{ formatMoney(row.original.basePrice) }}</span>
+        </template>
+        <template #stock-cell="{ row }">
+          <template v-if="row.original.variants">
+            <span
+              class="tabular-nums"
+              :class="stock(row.original) ? 'text-highlighted' : 'font-medium text-error'"
+            >{{ stock(row.original) }}</span>
+            <span class="block text-xs">
+              {{ row.original.variants.length }} {{ row.original.variants.length === 1 ? 'variante' : 'variantes' }}
+            </span>
+          </template>
+          <span v-else>-</span>
+        </template>
+        <template #status-cell="{ row }">
+          <UBadge
+            :color="statusColors[row.original.status]"
+            :label="STATUS_LABELS[row.original.status]"
+          />
+        </template>
+      </UTable>
 
-      <UiPagination
+      <PagePagination
         v-if="page"
-        :page="page.page"
-        :total-pages="page.totalPages"
-        :total-elements="page.totalElements"
+        :page="page"
         :disabled="store.list.pending"
         @change="store.list.load"
       />
     </div>
-  </UiPanel>
+  </UCard>
 </template>

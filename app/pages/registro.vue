@@ -35,7 +35,7 @@ async function onSuccess() {
       ¿Ya tienes cuenta?
       <NuxtLink
         :to="loginTo"
-        class="font-medium text-accent underline-offset-2 hover:underline"
+        class="font-medium text-primary underline-offset-2 hover:underline"
       >
         Inicia sesión
       </NuxtLink>

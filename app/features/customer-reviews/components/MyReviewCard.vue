@@ -29,13 +29,13 @@ watch(() => props.deleting, (value, previous) => {
         :src="review.productImageUrl"
         alt=""
         loading="lazy"
-        class="aspect-[4/5] w-full rounded-lg border border-line object-cover"
+        class="aspect-[4/5] w-full rounded-lg border border-default object-cover"
       >
       <span
         v-else
-        class="grid aspect-[4/5] w-full place-items-center rounded-lg bg-surface text-ink-muted"
+        class="grid aspect-[4/5] w-full place-items-center rounded-lg bg-muted text-muted"
       >
-        <Icon
+        <UIcon
           name="ph:image"
           class="size-5"
         />
@@ -46,23 +46,23 @@ watch(() => props.deleting, (value, previous) => {
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
         <NuxtLink
           :to="PRODUCT_ROUTE(review.productSlug)"
-          class="font-medium text-ink underline-offset-2 hover:underline"
+          class="font-medium text-highlighted underline-offset-2 hover:underline"
         >
           {{ review.productName }}
         </NuxtLink>
         <span
           class="rounded-md px-1.5 py-0.5 text-xs font-medium"
-          :class="review.approved ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'"
+          :class="review.approved ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'"
         >{{ review.approved ? 'Publicada' : 'En revisión' }}</span>
       </div>
-      <div class="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+      <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
         <RatingStars :rating="review.rating" />
         <span>{{ formatDateTime(review.updatedAt) }}</span>
         <span
           v-if="review.verifiedPurchase"
           class="inline-flex items-center gap-1 text-success"
         >
-          <Icon
+          <UIcon
             name="ph:seal-check"
             class="size-3.5"
             aria-hidden="true"
@@ -72,13 +72,13 @@ watch(() => props.deleting, (value, previous) => {
       </div>
       <p
         v-if="review.title"
-        class="font-medium text-ink"
+        class="font-medium text-highlighted"
       >
         {{ review.title }}
       </p>
       <p
         v-if="review.body"
-        class="line-clamp-4 whitespace-pre-line text-sm leading-relaxed text-ink-muted"
+        class="line-clamp-4 whitespace-pre-line text-sm leading-relaxed text-muted"
       >
         {{ review.body }}
       </p>
@@ -86,43 +86,43 @@ watch(() => props.deleting, (value, previous) => {
 
     <div class="flex flex-wrap items-start gap-1.5 sm:flex-col sm:items-end">
       <template v-if="confirming">
-        <span class="text-xs text-ink-muted sm:text-right">¿Borrar? No se puede deshacer.</span>
+        <span class="text-xs text-muted sm:text-right">¿Borrar? No se puede deshacer.</span>
         <div class="flex gap-1.5">
-          <UiButton
-            variant="danger"
+          <UButton
+            color="error"
+            variant="soft"
             size="sm"
             :loading="deleting"
+            label="Sí, borrar"
             @click="emit('remove')"
-          >
-            Sí, borrar
-          </UiButton>
-          <UiButton
+          />
+          <UButton
+            color="neutral"
             variant="ghost"
             size="sm"
             :disabled="deleting"
+            label="No"
             @click="confirming = false"
-          >
-            No
-          </UiButton>
+          />
         </div>
       </template>
       <template v-else>
-        <UiButton
-          variant="secondary"
+        <UButton
+          color="neutral"
+          variant="outline"
           size="sm"
           icon="ph:pencil-simple"
+          label="Editar"
           @click="emit('edit')"
-        >
-          Editar
-        </UiButton>
-        <UiButton
+        />
+        <UButton
+          color="neutral"
           variant="ghost"
           size="sm"
           icon="ph:trash"
+          label="Borrar"
           @click="confirming = true"
-        >
-          Borrar
-        </UiButton>
+        />
       </template>
     </div>
   </article>

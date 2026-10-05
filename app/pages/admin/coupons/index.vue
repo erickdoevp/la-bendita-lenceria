@@ -14,19 +14,18 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Cupones"
       description="Códigos de descuento para clientas con cuenta. Cada una puede usar un cupón una sola vez."
     >
-      <template #actions>
-        <UiButton
+      <template #links>
+        <UButton
           icon="ph:plus"
+          label="Nuevo cupón"
           :to="COUPON_ROUTES.create"
-        >
-          Nuevo cupón
-        </UiButton>
+        />
       </template>
-    </UiPageHeader>
+    </UPageHeader>
     <CouponsManager />
   </div>
 </template>

@@ -1,18 +1,32 @@
 <script setup lang="ts">
-import { AdminMobileNav, AdminSidebarNav } from '~/features/admin-shell'
+import { ADMIN_NAV, AdminSidebar } from '~/features/admin-shell'
+
+const route = useRoute()
+
+// Titulo de la barra superior: la seccion activa del menu
+const sectionTitle = computed(() => {
+  const items = ADMIN_NAV.flatMap(group => group.items)
+  const match = items
+    .filter(item => (item.exact ? route.path === item.to : route.path.startsWith(item.to)))
+    .sort((a, b) => b.to.length - a.to.length)[0]
+  return match?.label ?? 'Panel'
+})
 </script>
 
 <template>
-  <div class="min-h-[100dvh] bg-surface">
-    <aside class="fixed inset-y-0 left-0 hidden w-64 border-r border-line bg-surface-raised lg:block">
-      <AdminSidebarNav />
-    </aside>
+  <UDashboardGroup>
+    <AdminSidebar />
 
-    <div class="lg:pl-64">
-      <AdminMobileNav />
-      <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
-        <slot />
-      </main>
-    </div>
-  </div>
+    <UDashboardPanel>
+      <template #header>
+        <UDashboardNavbar :title="sectionTitle" />
+      </template>
+
+      <template #body>
+        <div class="mx-auto w-full max-w-6xl">
+          <slot />
+        </div>
+      </template>
+    </UDashboardPanel>
+  </UDashboardGroup>
 </template>

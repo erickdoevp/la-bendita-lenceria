@@ -10,7 +10,6 @@ const emit = defineEmits<{ saved: [review: Review], cancel: [] }>()
 
 const store = useMyReviewsStore()
 const { fieldErrors, formError, validate, applyApiError, clearField } = useFormErrors()
-const uid = useId()
 const pending = ref(false)
 
 const values = reactive({
@@ -46,75 +45,67 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-rating`"
-      v-slot="field"
+    <UFormField
       label="Calificación"
       :error="fieldErrors.rating"
     >
       <RatingInput
-        :id="field.id"
         v-model="values.rating"
-        :invalid="field.invalid"
-        :described-by="field.describedBy"
+        label="Calificación"
+        :invalid="Boolean(fieldErrors.rating)"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-title`"
-      v-slot="field"
+    <UFormField
       label="Título"
-      optional
-      :hint="`${values.title.length} / ${REVIEW_TITLE_MAX}`"
+      :help="`${values.title.length} / ${REVIEW_TITLE_MAX}`"
       :error="fieldErrors.title"
+      hint="Opcional"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.title"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         :maxlength="REVIEW_TITLE_MAX"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-body`"
-      v-slot="field"
+    <UFormField
       label="Tu opinión"
-      optional
       :error="fieldErrors.body"
+      hint="Opcional"
     >
-      <UiTextarea
-        :id="field.id"
+      <UTextarea
         v-model="values.body"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
-        rows="5"
+        :rows="5"
+        autoresize
       />
-    </UiField>
+    </UFormField>
 
-    <UiAlert tone="info">
-      Al editarla dejará de mostrarse hasta que la revisemos de nuevo.
-    </UiAlert>
+    <UAlert
+      color="primary"
+      icon="ph:info"
+      title="Al editarla dejará de mostrarse hasta que la revisemos de nuevo."
+    />
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        Guardar y enviar a revisión
-      </UiButton>
-      <UiButton
-        variant="secondary"
+        label="Guardar y enviar a revisión"
+      />
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

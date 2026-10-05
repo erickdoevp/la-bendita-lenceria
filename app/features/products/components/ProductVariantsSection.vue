@@ -36,7 +36,7 @@ const hint = computed(() => {
 </script>
 
 <template>
-  <UiPanel
+  <UCard
     title="Variantes"
     description="Cada combinación de talla y color tiene su propio SKU, costo y stock. Es lo que se agrega al carrito."
   >
@@ -49,39 +49,43 @@ const hint = computed(() => {
         <ProductColorPicker />
       </div>
 
-      <UiAlert v-if="draft.fieldErrors.variants">
-        {{ draft.fieldErrors.variants }}
-      </UiAlert>
+      <UAlert
+        v-if="draft.fieldErrors.variants"
+        color="error"
+        icon="ph:warning-circle"
+        :title="draft.fieldErrors.variants"
+      />
 
       <p
         v-if="hint"
-        class="text-sm text-ink-muted"
+        class="text-sm text-muted"
       >
         {{ hint }}
       </p>
 
       <template v-else>
-        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
-          <p class="text-sm text-ink">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-default pt-5">
+          <p class="text-sm text-highlighted">
             <span class="font-semibold tabular-nums">{{ draft.variants.length }}</span>
             {{ draft.variants.length === 1 ? 'variante' : 'variantes' }}
           </p>
-          <UiButton
+          <UButton
             v-if="draft.excludedKeys.length"
+            color="neutral"
             variant="ghost"
             size="sm"
             icon="ph:arrow-counter-clockwise"
             @click="draft.restoreVariants()"
           >
             Restaurar {{ draft.excludedKeys.length }} {{ draft.excludedKeys.length === 1 ? 'quitada' : 'quitadas' }}
-          </UiButton>
+          </UButton>
         </div>
 
         <VariantBulkEdit v-if="draft.variants.length > 1" />
 
         <div class="@container grid gap-6">
           <div
-            class="hidden grid-cols-[3.5rem_minmax(8rem,1.3fr)_repeat(3,minmax(0,1fr))_5.5rem_7rem] gap-2.5 text-xs font-medium text-ink-muted @min-[42rem]:grid"
+            class="hidden grid-cols-[3.5rem_minmax(8rem,1.3fr)_repeat(3,minmax(0,1fr))_5.5rem_7rem] gap-2.5 text-xs font-medium text-muted @min-[42rem]:grid"
             aria-hidden="true"
           >
             <span>Talla</span>
@@ -98,23 +102,23 @@ const hint = computed(() => {
             :key="group.colorId"
             :aria-label="`Variantes en ${group.name}`"
           >
-            <h3 class="flex items-center gap-2.5 text-sm font-semibold text-ink">
+            <h3 class="flex items-center gap-2.5 text-sm font-semibold text-highlighted">
               <ColorSwatch
                 :hex="group.hex"
                 size="sm"
               />
               {{ group.name }}
-              <span class="font-normal text-ink-muted">{{ group.rows.length }}</span>
+              <span class="font-normal text-muted">{{ group.rows.length }}</span>
             </h3>
             <p
               v-if="!group.rows.length"
-              class="mt-2 text-sm text-ink-muted"
+              class="mt-2 text-sm text-muted"
             >
               Quitaste todas las tallas de este color.
             </p>
             <ul
               v-else
-              class="mt-1 divide-y divide-line"
+              class="mt-1 divide-y divide-default"
             >
               <VariantRow
                 v-for="row in group.rows"
@@ -128,5 +132,5 @@ const hint = computed(() => {
         </div>
       </template>
     </div>
-  </UiPanel>
+  </UCard>
 </template>

@@ -14,21 +14,25 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-6">
-    <UiPageHeader
+    <UPageHeader
       title="Perfil y seguridad"
       description="Tus datos personales, tu contraseña y las sesiones abiertas."
     />
-    <UiPanel title="Datos personales">
+    <UCard
+      title="Datos personales"
+    >
       <ProfileForm />
-    </UiPanel>
-    <UiPanel
+    </UCard>
+    <UCard
       title="Contraseña"
       description="Mínimo 12 caracteres, con mayúscula, minúscula, número y carácter especial."
     >
       <PasswordChangeForm />
-    </UiPanel>
-    <UiPanel title="Sesiones">
+    </UCard>
+    <UCard
+      title="Sesiones"
+    >
       <SessionsPanel />
-    </UiPanel>
+    </UCard>
   </div>
 </template>

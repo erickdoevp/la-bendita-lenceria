@@ -25,11 +25,11 @@ const current = computed(() => steps.value.findIndex(step => step.key === props.
     >
       <span
         class="h-1.5 rounded-full transition-colors duration-300"
-        :class="index <= current ? 'bg-accent' : 'bg-line'"
+        :class="index <= current ? 'bg-primary' : 'bg-accented'"
       />
       <span
-        class="text-xs leading-tight sm:text-[13px]"
-        :class="index === current ? 'font-medium text-ink' : index < current ? 'text-ink' : 'text-ink-muted'"
+        class="text-xs leading-tight sm:text-sm"
+        :class="index === current ? 'font-medium text-highlighted' : index < current ? 'text-highlighted' : 'text-muted'"
       >
         {{ step.label }}
       </span>

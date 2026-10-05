@@ -13,7 +13,6 @@ const store = useCouponsStore()
 const { fieldErrors, formError, validate, applyApiError, clearField, reset } = useFormErrors()
 const values = reactive(toFormValues(props.coupon ?? null))
 const pending = ref(false)
-const uid = useId()
 const isEdit = computed(() => Boolean(props.coupon))
 
 const today = new Date().toLocaleDateString('en-CA')
@@ -98,277 +97,244 @@ async function onSubmit() {
     @submit.prevent="onSubmit"
   >
     <div class="grid gap-6">
-      <UiPanel
+      <UCard
         title="Código"
         description="Lo que escribe la clienta en el carrito. No distingue mayúsculas."
       >
         <div class="grid gap-5">
-          <UiField
-            :id="`${uid}-code`"
-            v-slot="field"
+          <UFormField
             label="Código"
-            :hint="isEdit && coupon?.usedCount ? 'Cambiarlo no afecta los usos ya registrados.' : 'Letras, números, guion y guion bajo.'"
+            :help="isEdit && coupon?.usedCount ? 'Cambiarlo no afecta los usos ya registrados.' : 'Letras, números, guion y guion bajo.'"
             :error="fieldErrors.code"
           >
-            <UiInput
-              :id="field.id"
+            <UInput
               v-model="values.code"
-              class="font-mono uppercase tracking-wide"
+              :ui="{ base: 'font-mono uppercase tracking-wide' }"
               maxlength="40"
-              :invalid="field.invalid"
-              :aria-describedby="field.describedBy"
               placeholder="BIENVENIDA10"
               autocomplete="off"
               spellcheck="false"
             />
-          </UiField>
+          </UFormField>
 
-          <UiField
-            :id="`${uid}-description`"
-            v-slot="field"
+          <UFormField
             label="Descripción"
-            hint="La ve la clienta al aplicar el cupón."
-            :optional="!coupon?.description"
+            help="La ve la clienta al aplicar el cupón."
+            :hint="coupon?.description ? undefined : 'Opcional'"
             :error="fieldErrors.description"
           >
-            <UiInput
-              :id="field.id"
+            <UInput
               v-model="values.description"
               maxlength="255"
-              :invalid="field.invalid"
-              :aria-describedby="field.describedBy"
               placeholder="10 % en tu primera compra"
               autocomplete="off"
             />
-          </UiField>
+          </UFormField>
         </div>
-      </UiPanel>
+      </UCard>
 
-      <UiPanel
+      <UCard
         title="Descuento"
         description="Se aplica sobre el subtotal de productos (con IVA), antes del envío."
       >
         <div class="grid gap-5">
-          <fieldset class="grid gap-2">
-            <legend class="pb-2 text-sm font-medium text-ink">
-              Tipo
-            </legend>
-            <div
-              class="grid grid-cols-2 gap-2"
-              role="radiogroup"
-            >
-              <label
-                v-for="type in valueTypes"
-                :key="type.value"
-                class="flex cursor-pointer items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium transition-colors focus-within:ring-3 focus-within:ring-accent/20"
-                :class="values.valueType === type.value ? 'border-accent bg-accent/5 text-ink' : 'border-line text-ink-muted hover:border-ink-muted'"
-              >
-                <input
-                  v-model="values.valueType"
-                  type="radio"
-                  :name="`${uid}-type`"
-                  :value="type.value"
-                  class="sr-only"
-                >
-                <Icon
-                  :name="type.icon"
+          <URadioGroup
+            v-model="values.valueType"
+            legend="Tipo"
+            :items="valueTypes"
+            variant="card"
+            orientation="horizontal"
+            :ui="{ fieldset: 'grid grid-cols-2 gap-2', legend: 'mb-2' }"
+          >
+            <template #label="{ item }">
+              <span class="inline-flex items-center gap-2">
+                <UIcon
+                  :name="item.icon"
                   class="size-4"
-                  :class="values.valueType === type.value && 'text-accent'"
-                  aria-hidden="true"
                 />
-                {{ type.label }}
-              </label>
-            </div>
-          </fieldset>
+                {{ item.label }}
+              </span>
+            </template>
+          </URadioGroup>
 
           <div class="grid gap-5 sm:grid-cols-2">
-            <UiField
-              :id="`${uid}-value`"
-              v-slot="field"
+            <UFormField
               :label="values.valueType === 'PERCENTAGE' ? 'Porcentaje' : 'Monto'"
-              :hint="values.valueType === 'PERCENTAGE' ? 'Entre 0.01 y 100.' : 'Nunca descuenta más que el subtotal.'"
+              :help="values.valueType === 'PERCENTAGE' ? 'Entre 0.01 y 100.' : 'Nunca descuenta más que el subtotal.'"
               :error="fieldErrors.value"
             >
-              <UiInput
-                :id="field.id"
-                v-model="values.value"
+              <UInput
+                v-model.number="values.value"
                 type="number"
                 inputmode="decimal"
                 min="0.01"
                 :max="values.valueType === 'PERCENTAGE' ? 100 : undefined"
                 step="0.01"
-                :prefix="values.valueType === 'FIXED' ? '$' : undefined"
-                :suffix="values.valueType === 'PERCENTAGE' ? '%' : undefined"
-                :invalid="field.invalid"
-                :aria-describedby="field.describedBy"
                 :placeholder="values.valueType === 'PERCENTAGE' ? '10' : '150'"
-              />
-            </UiField>
+              >
+                <template
+                  v-if="values.valueType === 'FIXED'"
+                  #leading
+                >
+                  <span class="text-muted">$</span>
+                </template>
+                <template
+                  v-else
+                  #trailing
+                >
+                  <span class="text-muted">%</span>
+                </template>
+              </UInput>
+            </UFormField>
 
-            <UiField
+            <UFormField
               v-if="values.valueType === 'PERCENTAGE'"
-              :id="`${uid}-max-discount`"
-              v-slot="field"
               label="Tope de descuento"
-              hint="Máximo en pesos. Vacío = sin tope."
-              :optional="coupon?.maxDiscountAmount == null"
+              help="Máximo en pesos. Vacío = sin tope."
+              :hint="coupon?.maxDiscountAmount == null ? 'Opcional' : undefined"
               :error="fieldErrors.maxDiscountAmount"
             >
-              <UiInput
-                :id="field.id"
-                v-model="values.maxDiscountAmount"
+              <UInput
+                v-model.number="values.maxDiscountAmount"
                 type="number"
                 inputmode="decimal"
                 min="0"
                 step="0.01"
-                prefix="$"
-                :invalid="field.invalid"
-                :aria-describedby="field.describedBy"
                 placeholder="200"
-              />
-            </UiField>
+              >
+                <template #leading>
+                  <span class="text-muted">$</span>
+                </template>
+              </UInput>
+            </UFormField>
           </div>
         </div>
-      </UiPanel>
+      </UCard>
 
-      <UiPanel
+      <UCard
         title="Restricciones"
         description="Todas opcionales. Cada clienta puede usar el cupón una sola vez y solo con cuenta."
       >
         <div class="grid gap-5">
           <div class="grid gap-5 sm:grid-cols-2">
-            <UiField
-              :id="`${uid}-min`"
-              v-slot="field"
+            <UFormField
               label="Compra mínima"
-              hint="Subtotal desde el que aplica."
-              :optional="coupon?.minOrderAmount == null"
+              help="Subtotal desde el que aplica."
+              :hint="coupon?.minOrderAmount == null ? 'Opcional' : undefined"
               :error="fieldErrors.minOrderAmount"
             >
-              <UiInput
-                :id="field.id"
-                v-model="values.minOrderAmount"
+              <UInput
+                v-model.number="values.minOrderAmount"
                 type="number"
                 inputmode="decimal"
                 min="0"
                 step="0.01"
-                prefix="$"
-                :invalid="field.invalid"
-                :aria-describedby="field.describedBy"
                 placeholder="500"
-              />
-            </UiField>
+              >
+                <template #leading>
+                  <span class="text-muted">$</span>
+                </template>
+              </UInput>
+            </UFormField>
 
-            <UiField
-              :id="`${uid}-max-uses`"
-              v-slot="field"
+            <UFormField
               label="Usos totales"
-              :hint="coupon?.usedCount ? `Ya lleva ${coupon.usedCount}. Vacío = ilimitado.` : 'Entre todas las clientas. Vacío = ilimitado.'"
-              :optional="coupon?.maxUses == null"
+              :help="coupon?.usedCount ? `Ya lleva ${coupon.usedCount}. Vacío = ilimitado.` : 'Entre todas las clientas. Vacío = ilimitado.'"
+              :hint="coupon?.maxUses == null ? 'Opcional' : undefined"
               :error="fieldErrors.maxUses"
             >
-              <UiInput
-                :id="field.id"
-                v-model="values.maxUses"
+              <UInput
+                v-model.number="values.maxUses"
                 type="number"
                 inputmode="numeric"
                 min="1"
                 step="1"
-                :invalid="field.invalid"
-                :aria-describedby="field.describedBy"
                 placeholder="100"
               />
-            </UiField>
+            </UFormField>
           </div>
 
           <div class="grid gap-5 sm:grid-cols-2">
-            <UiField
-              :id="`${uid}-expires`"
-              v-slot="field"
+            <UFormField
               label="Vence el"
-              hint="Vacío = no vence. Sin hora, vale todo el día."
-              :optional="!coupon?.expiresAt"
+              help="Vacío = no vence. Sin hora, vale todo el día."
+              :hint="coupon?.expiresAt ? undefined : 'Opcional'"
               :error="fieldErrors.expiresDate"
             >
-              <UiInput
-                :id="field.id"
+              <UInput
                 v-model="values.expiresDate"
                 type="date"
                 :min="today"
-                :invalid="field.invalid"
-                :aria-describedby="field.describedBy"
               />
-            </UiField>
+            </UFormField>
 
-            <UiField
-              :id="`${uid}-expires-time`"
-              v-slot="field"
+            <UFormField
               label="Hora"
-              optional
+              hint="Opcional"
             >
-              <UiInput
-                :id="field.id"
+              <UInput
                 v-model="values.expiresTime"
                 type="time"
                 :disabled="!values.expiresDate"
-                :aria-describedby="field.describedBy"
               />
-            </UiField>
+            </UFormField>
           </div>
 
-          <UiSwitch
-            :id="`${uid}-first`"
+          <USwitch
             v-model="values.firstPurchaseOnly"
             label="Solo primera compra"
             description="Solo si la clienta no tiene pedidos previos (los cancelados no cuentan)."
           />
         </div>
-      </UiPanel>
+      </UCard>
     </div>
 
     <div class="grid gap-6 lg:sticky lg:top-6">
-      <UiPanel title="Resumen">
+      <UCard title="Resumen">
         <div class="grid gap-5">
-          <p class="font-mono text-lg font-semibold tracking-wide text-ink">
+          <p class="font-mono text-lg font-semibold tracking-wide text-highlighted">
             {{ values.code || 'CÓDIGO' }}
           </p>
           <p
-            class="text-sm leading-relaxed text-ink-muted"
+            class="text-sm leading-relaxed text-muted"
             aria-live="polite"
           >
             {{ preview }}
           </p>
 
-          <UiSwitch
-            :id="`${uid}-active`"
+          <USwitch
             v-model="values.active"
             label="Activo"
             description="Apagado, nadie lo puede usar."
           />
 
           <!-- El formulario es largo: el aviso junto al boton dice que hay errores mas arriba -->
-          <UiAlert v-if="formError || Object.keys(fieldErrors).length">
-            {{ formError ?? 'Revisa los campos marcados.' }}
-          </UiAlert>
+          <UAlert
+            v-if="formError || Object.keys(fieldErrors).length"
+            color="error"
+            icon="ph:warning-circle"
+            :title="formError ?? 'Revisa los campos marcados.'"
+          />
 
           <div class="grid gap-2">
-            <UiButton
+            <UButton
               type="submit"
+              block
               :loading="pending"
               :icon="isEdit ? 'ph:floppy-disk' : 'ph:plus'"
-            >
-              {{ isEdit ? 'Guardar cambios' : 'Crear cupón' }}
-            </UiButton>
-            <UiButton
-              variant="secondary"
+              :label="isEdit ? 'Guardar cambios' : 'Crear cupón'"
+            />
+            <UButton
+              color="neutral"
+              variant="outline"
+              block
+              label="Cancelar"
               :disabled="pending"
               @click="emit('cancel')"
-            >
-              Cancelar
-            </UiButton>
+            />
           </div>
         </div>
-      </UiPanel>
+      </UCard>
     </div>
   </form>
 </template>

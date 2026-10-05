@@ -14,19 +14,18 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Artículos"
       description="Todo el catálogo, incluidos borradores y archivados que no se ven en la tienda."
     >
-      <template #actions>
-        <UiButton
+      <template #links>
+        <UButton
           icon="ph:plus"
           :to="PRODUCT_ROUTES.create"
-        >
-          Nuevo artículo
-        </UiButton>
+          label="Nuevo artículo"
+        />
       </template>
-    </UiPageHeader>
+    </UPageHeader>
     <ProductsManager />
   </div>
 </template>

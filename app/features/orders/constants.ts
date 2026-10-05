@@ -1,3 +1,4 @@
+import type { BadgeProps } from '@nuxt/ui'
 import type {
   OrderFilters,
   OrderStatus,
@@ -23,15 +24,15 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   REFUNDED: 'Reembolsada',
 }
 
-export const ORDER_STATUS_CLASSES: Record<OrderStatus, string> = {
-  PENDING_PAYMENT: 'bg-warning-soft text-warning',
-  CONFIRMED: 'bg-accent/10 text-accent',
-  PROCESSING: 'bg-accent/10 text-accent',
-  SHIPPED: 'bg-surface text-ink',
-  READY_FOR_PICKUP: 'bg-surface text-ink',
-  DELIVERED: 'bg-success-soft text-success',
-  CANCELLED: 'bg-surface text-ink-muted',
-  REFUNDED: 'bg-danger-soft text-danger',
+export const ORDER_STATUS_COLORS: Record<OrderStatus, BadgeProps['color']> = {
+  PENDING_PAYMENT: 'warning',
+  CONFIRMED: 'primary',
+  PROCESSING: 'primary',
+  SHIPPED: 'neutral',
+  READY_FOR_PICKUP: 'neutral',
+  DELIVERED: 'success',
+  CANCELLED: 'neutral',
+  REFUNDED: 'error',
 }
 
 /** Pestanas del listado: las de trabajo pendiente primero. */
@@ -77,12 +78,12 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   REFUNDED: 'Reembolsado',
 }
 
-export const PAYMENT_STATUS_CLASSES: Record<PaymentStatus, string> = {
-  PENDING: 'bg-warning-soft text-warning',
-  PAID: 'bg-success-soft text-success',
-  FAILED: 'bg-danger-soft text-danger',
-  PARTIALLY_REFUNDED: 'bg-warning-soft text-warning',
-  REFUNDED: 'bg-danger-soft text-danger',
+export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, BadgeProps['color']> = {
+  PENDING: 'warning',
+  PAID: 'success',
+  FAILED: 'error',
+  PARTIALLY_REFUNDED: 'warning',
+  REFUNDED: 'error',
 }
 
 export const REFUND_REASON_LABELS: Record<RefundReason, string> = {

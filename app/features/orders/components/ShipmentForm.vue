@@ -43,23 +43,21 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
     <div class="grid gap-5 sm:grid-cols-2">
-      <UiField
-        :id="`${uid}-carrier`"
-        v-slot="field"
+      <UFormField
         label="Paquetería"
         :error="fieldErrors.carrier"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.carrier"
           :list="`${uid}-carriers`"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           placeholder="Estafeta"
           autocomplete="off"
           autofocus
@@ -71,96 +69,75 @@ async function onSubmit() {
             :value="carrier"
           />
         </datalist>
-      </UiField>
+      </UFormField>
 
-      <UiField
-        :id="`${uid}-tracking`"
-        v-slot="field"
+      <UFormField
         label="Número de guía"
         :error="fieldErrors.trackingNumber"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.trackingNumber"
           class="font-mono"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           placeholder="1234567890"
           autocomplete="off"
           spellcheck="false"
         />
-      </UiField>
+      </UFormField>
     </div>
 
-    <UiField
-      :id="`${uid}-url`"
-      v-slot="field"
+    <UFormField
       label="Liga de rastreo"
-      optional
       :error="fieldErrors.trackingUrl"
+      hint="Opcional"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.trackingUrl"
         type="url"
         inputmode="url"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="https://"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-eta`"
-      v-slot="field"
+    <UFormField
       label="Entrega estimada"
-      optional
       :error="fieldErrors.estimatedDeliveryAt"
+      hint="Opcional"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.estimatedDeliveryAt"
         type="date"
         :min="today"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-notes`"
-      v-slot="field"
+    <UFormField
       label="Notas del envío"
-      optional
       :error="fieldErrors.notes"
+      hint="Opcional"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.notes"
         maxlength="500"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Caja chica"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
     <div class="flex flex-wrap justify-end gap-2">
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
-      <UiButton
+      />
+      <UButton
         type="submit"
         icon="ph:truck"
         :loading="pending"
-      >
-        Registrar envío
-      </UiButton>
+        label="Registrar envío"
+      />
     </div>
   </form>
 </template>

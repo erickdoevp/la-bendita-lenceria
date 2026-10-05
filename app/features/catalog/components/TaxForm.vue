@@ -9,7 +9,6 @@ const emit = defineEmits<{ saved: [tax: TaxConfig], cancel: [] }>()
 const store = useTaxesStore()
 const { fieldErrors, formError, validate, applyApiError, clearField, reset } = useFormErrors()
 const pending = ref(false)
-const uid = useId()
 const isEdit = computed(() => Boolean(props.tax))
 // El IVA global no se apaga desde aqui: se reemplaza activando otro
 const isGlobal = computed(() => Boolean(props.tax?.active))
@@ -59,81 +58,75 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-name`"
-      v-slot="field"
+    <UFormField
       label="Nombre"
       :error="fieldErrors.name"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.name"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="IVA Frontera 8%"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-rate`"
-      v-slot="field"
+    <UFormField
       label="Porcentaje"
-      hint="Escribe 16 para un IVA del 16 %."
+      help="Escribe 16 para un IVA del 16 %."
       :error="fieldErrors.rate"
     >
-      <UiInput
-        :id="field.id"
-        v-model="values.rate"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
+      <UInput
+        v-model.number="values.rate"
         type="number"
         min="0"
         max="100"
         step="0.01"
         inputmode="decimal"
-        suffix="%"
-      />
-    </UiField>
+      >
+        <template #trailing>
+          <span class="text-muted">%</span>
+        </template>
+      </UInput>
+    </UFormField>
 
     <p
       v-if="isGlobal"
-      class="flex items-start gap-2 text-[13px] text-ink-muted"
+      class="flex items-start gap-2 text-sm text-muted"
     >
-      <Icon
+      <UIcon
         name="ph:check-circle-fill"
-        class="mt-0.5 size-4 shrink-0 text-accent"
+        class="mt-0.5 size-4 shrink-0 text-primary"
         aria-hidden="true"
       />
       Es el IVA global. Para dejar de usarlo, activa otro impuesto.
     </p>
-    <UiSwitch
+    <USwitch
       v-else
-      :id="`${uid}-active`"
       v-model="values.active"
       label="Usar como IVA global"
       description="Reemplaza al IVA activo actual."
     />
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        {{ isEdit ? 'Guardar cambios' : 'Crear impuesto' }}
-      </UiButton>
-      <UiButton
+        :label="isEdit ? 'Guardar cambios' : 'Crear impuesto'"
+      />
+      <UButton
         v-if="isEdit"
-        variant="secondary"
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

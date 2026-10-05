@@ -1,3 +1,4 @@
+import type { BadgeProps } from '@nuxt/ui'
 import type { MovementFilters, StockMovementType } from './types'
 
 export const INVENTORY_ROUTES = {
@@ -16,12 +17,12 @@ export const MOVEMENT_TYPE_LABELS: Record<StockMovementType, string> = {
   ADJUSTMENT: 'Ajuste',
 }
 
-export const MOVEMENT_TYPE_CLASSES: Record<StockMovementType, string> = {
-  INITIAL: 'bg-surface text-ink-muted',
-  PURCHASE: 'bg-success-soft text-success',
-  SALE: 'bg-accent/10 text-accent',
-  RETURN: 'bg-warning-soft text-warning',
-  ADJUSTMENT: 'bg-surface text-ink',
+export const MOVEMENT_TYPE_COLORS: Record<StockMovementType, BadgeProps['color']> = {
+  INITIAL: 'neutral',
+  PURCHASE: 'success',
+  SALE: 'primary',
+  RETURN: 'warning',
+  ADJUSTMENT: 'neutral',
 }
 
 /** createdBy de los procesos automaticos (webhook de pago, expiracion). */

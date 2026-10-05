@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Reseñas"
       description="Toda reseña nace oculta y se publica cuando la apruebas. Si la clienta la edita, vuelve a revisión. Rechazar la borra."
     />

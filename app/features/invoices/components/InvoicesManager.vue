@@ -10,6 +10,8 @@ const cancellingId = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 
 const page = computed(() => list.data)
+const statusTab = useSelectAll(list.filters, 'status')
+const tabs = INVOICE_TABS.map(tab => ({ label: tab.label, value: tab.status || SELECT_ALL }))
 const items = computed(() => page.value?.items ?? [])
 
 onMounted(() => list.load(0))
@@ -32,55 +34,43 @@ async function onCancel(invoice: Invoice) {
 
 <template>
   <div class="grid gap-6">
-    <UiPageHeader
+    <UPageHeader
       title="Mis facturas"
       description="Solicita la factura desde el detalle de un pedido pagado. Cuando la emitamos podrás descargar el PDF y el XML."
     />
 
-    <div
-      class="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0"
-      role="tablist"
+    <UTabs
+      v-model="statusTab"
+      :items="tabs"
+      :content="false"
+      variant="pill"
+      color="neutral"
       aria-label="Filtrar por estado"
-    >
-      <button
-        v-for="tab in INVOICE_TABS"
-        :key="tab.status"
-        type="button"
-        role="tab"
-        :aria-selected="list.filters.status === tab.status"
-        class="h-9 shrink-0 rounded-xl px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-        :class="list.filters.status === tab.status ? 'bg-ink text-surface-raised' : 'text-ink-muted hover:bg-surface-raised hover:text-ink'"
-        @click="list.filters.status = tab.status"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
+      class="overflow-x-auto"
+    />
 
-    <UiAlert v-if="actionError || list.error">
-      {{ actionError ?? list.error }}
-      <button
-        v-if="list.error"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="list.load()"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="actionError || list.error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="actionError ?? list.error ?? undefined"
+      :actions="list.error ? retryAction(() => list.load()) : undefined"
+      orientation="horizontal"
+    />
 
-    <UiPanel>
+    <UCard>
       <div
         v-if="list.pending && !page"
         class="grid gap-4"
       >
-        <UiSkeleton
+        <USkeleton
           v-for="n in 3"
           :key="n"
           class="h-20"
         />
       </div>
 
-      <UiEmptyState
+      <UEmpty
         v-else-if="page && !items.length"
         icon="ph:file-text"
         :title="list.filters.status ? 'No hay facturas con este estado' : 'Aún no has solicitado facturas'"
@@ -89,7 +79,7 @@ async function onCancel(invoice: Invoice) {
 
       <ul
         v-else
-        class="-my-5 divide-y divide-line transition-opacity sm:-my-6"
+        class="-my-5 divide-y divide-default transition-opacity sm:-my-6"
         :class="list.pending && 'opacity-60'"
       >
         <li
@@ -104,13 +94,11 @@ async function onCancel(invoice: Invoice) {
           />
         </li>
       </ul>
-    </UiPanel>
+    </UCard>
 
-    <UiPagination
+    <PagePagination
       v-if="page"
-      :page="page.page"
-      :total-pages="page.totalPages"
-      :total-elements="page.totalElements"
+      :page="page"
       :disabled="list.pending"
       @change="list.load"
     />

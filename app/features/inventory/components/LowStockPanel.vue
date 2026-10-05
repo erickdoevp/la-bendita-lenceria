@@ -12,34 +12,42 @@ onMounted(() => store.load())
 </script>
 
 <template>
-  <UiPanel
+  <UCard
     v-if="store.items.length || store.error"
-    title="Alertas de stock"
-    description="Variantes con lo disponible en su umbral de alerta o por debajo. Las agotadas van primero."
   >
-    <template #actions>
-      <p class="flex gap-2 text-xs font-medium">
-        <span
-          v-if="store.outOfStock.length"
-          class="rounded-lg bg-danger-soft px-2 py-1 text-danger"
-        >{{ store.outOfStock.length }} agotada(s)</span>
-        <span
-          v-if="store.runningLow.length"
-          class="rounded-lg bg-warning-soft px-2 py-1 text-warning"
-        >{{ store.runningLow.length }} por agotarse</span>
-      </p>
+    <template #header>
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="grid gap-1">
+          <h2 class="font-semibold tracking-tight text-highlighted">
+            Alertas de stock
+          </h2>
+          <p class="max-w-[65ch] text-sm leading-relaxed text-muted">
+            Variantes con lo disponible en su umbral de alerta o por debajo. Las agotadas van primero.
+          </p>
+        </div>
+          <p class="flex gap-2">
+            <UBadge
+              v-if="store.outOfStock.length"
+              color="error"
+              :label="`${store.outOfStock.length} agotada(s)`"
+            />
+            <UBadge
+              v-if="store.runningLow.length"
+              color="warning"
+              :label="`${store.runningLow.length} por agotarse`"
+            />
+          </p>
+      </div>
     </template>
 
-    <UiAlert v-if="store.error">
-      {{ store.error }}
-      <button
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="store.load()"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="store.error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="store.error"
+      :actions="retryAction(() => store.load())"
+      orientation="horizontal"
+    />
 
     <div
       v-else
@@ -52,32 +60,32 @@ onMounted(() => store.load())
         >
           <NuxtLink
             :to="INVENTORY_ROUTES.variant(item.variantId)"
-            class="flex items-center justify-between gap-3 rounded-xl border border-line px-3 py-2.5 transition-colors duration-200 hover:border-ink-muted focus-visible:outline-2 focus-visible:outline-accent"
+            class="flex items-center justify-between gap-3 rounded-lg border border-default px-3 py-2.5 transition-colors duration-200 hover:border-accented focus-visible:outline-2 focus-visible:outline-primary"
           >
             <span class="grid min-w-0">
-              <span class="truncate font-mono text-sm text-ink">{{ item.variantSku }}</span>
-              <span class="text-xs text-ink-muted">Alerta en {{ item.lowStockThreshold }}</span>
+              <span class="truncate font-mono text-sm text-highlighted">{{ item.variantSku }}</span>
+              <span class="text-xs text-muted">Alerta en {{ item.lowStockThreshold }}</span>
             </span>
             <span
               class="shrink-0 text-right text-sm font-semibold tabular-nums"
-              :class="item.availableStock <= 0 ? 'text-danger' : 'text-warning'"
+              :class="item.availableStock <= 0 ? 'text-error' : 'text-warning'"
             >
               {{ item.availableStock <= 0 ? 'Agotado' : `${item.availableStock} disp.` }}
             </span>
           </NuxtLink>
         </li>
       </ul>
-      <UiButton
+      <UButton
         v-if="store.items.length > PREVIEW"
+        color="neutral"
         variant="ghost"
         size="sm"
         class="justify-self-start"
         :icon="expanded ? 'ph:caret-up' : 'ph:caret-down'"
         :aria-expanded="expanded"
+        :label="expanded ? 'Ver menos' : `Ver las ${store.items.length}`"
         @click="expanded = !expanded"
-      >
-        {{ expanded ? 'Ver menos' : `Ver las ${store.items.length}` }}
-      </UiButton>
+      />
     </div>
-  </UiPanel>
+  </UCard>
 </template>

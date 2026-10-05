@@ -14,7 +14,6 @@ const emit = defineEmits<{ saved: [category: Category], cancel: [] }>()
 const store = useCategoriesStore()
 const { fieldErrors, formError, validate, applyApiError, clearField, reset } = useFormErrors()
 const pending = ref(false)
-const uid = useId()
 const isEdit = computed(() => Boolean(props.category))
 
 const initialValues = () => ({
@@ -87,98 +86,78 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <UiField
-      :id="`${uid}-name`"
-      v-slot="field"
+    <UFormField
       label="Nombre"
       :error="fieldErrors.name"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.name"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Brasieres"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
     <div class="grid gap-2">
-      <UiField
-        :id="`${uid}-slug`"
-        v-slot="field"
+      <UFormField
         label="Slug"
-        :optional="!isEdit"
-        :hint="isEdit ? 'Cambiarlo rompe los enlaces viejos a esta categoría.' : 'Si lo dejas vacío se genera del nombre.'"
+        :hint="isEdit ? undefined : 'Opcional'"
+        :help="isEdit ? 'Cambiarlo rompe los enlaces viejos a esta categoría.' : 'Si lo dejas vacío se genera del nombre.'"
         :error="fieldErrors.slug"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.slug"
-          :class="isEdit && 'font-mono text-sm'"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
+          :ui="{ base: isEdit ? 'font-mono' : undefined }"
           :placeholder="nameSlug || 'brasieres'"
           autocomplete="off"
           spellcheck="false"
         />
-      </UiField>
-      <button
+      </UFormField>
+      <UButton
         v-if="suggestSlug"
-        type="button"
-        class="inline-flex items-center gap-1 justify-self-start text-[13px] text-accent hover:underline"
+        variant="link"
+        size="xs"
+        icon="ph:link"
+        :label="`Actualizar también el slug a ${nameSlug}`"
+        class="justify-self-start px-0"
         @click="values.slug = nameSlug"
-      >
-        <Icon
-          name="ph:link"
-          class="size-3.5"
-          aria-hidden="true"
-        />
-        Actualizar también el slug a {{ nameSlug }}
-      </button>
+      />
     </div>
 
-    <UiField
-      :id="`${uid}-parent`"
-      v-slot="field"
+    <UFormField
       label="Categoría padre"
-      optional
+      hint="Opcional"
       :error="fieldErrors.parentId"
     >
       <CategorySelect
-        :id="field.id"
         v-model="values.parentId"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         :exclude-id="category?.id"
         :current="category?.parent"
         empty-label="Ninguna (categoría raíz)"
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-description`"
-      v-slot="field"
+    <UFormField
       label="Descripción"
-      optional
-      hint="Separa párrafos con una línea en blanco."
+      hint="Opcional"
+      help="Separa párrafos con una línea en blanco."
     >
-      <UiTextarea
-        :id="field.id"
+      <UTextarea
         v-model="values.description"
-        :aria-describedby="field.describedBy"
-        rows="3"
+        :rows="3"
+        autoresize
       />
-    </UiField>
+    </UFormField>
 
-    <UiField
-      :id="`${uid}-image`"
+    <UFormField
       :label="category?.imageUrl ? 'Reemplazar imagen' : 'Imagen'"
-      optional
+      hint="Opcional"
     >
       <div class="grid gap-3">
         <div
@@ -188,44 +167,41 @@ async function onSubmit() {
           <img
             :src="category.imageUrl"
             :alt="`Imagen actual de ${category.name}`"
-            class="size-16 shrink-0 rounded-xl border border-line object-cover"
+            class="size-16 shrink-0 rounded-lg border border-default object-cover"
           >
-          <p class="text-[13px] text-ink-muted">
+          <p class="text-sm text-muted">
             Imagen actual. Se puede reemplazar, pero no quitar.
           </p>
         </div>
-        <UiImagePicker
-          :id="`${uid}-image`"
+        <ImagePicker
           v-model="values.images"
           :label="category?.imageUrl ? 'Elegir otra imagen' : 'Elegir imagen de portada'"
           :error="fieldErrors.image"
           compact
         />
       </div>
-    </UiField>
+    </UFormField>
 
-    <UiSwitch
-      :id="`${uid}-active`"
+    <USwitch
       v-model="values.active"
       label="Activa"
       description="Las inactivas no aparecen en la tienda ni en el selector de artículos."
     />
 
     <div class="flex flex-wrap gap-2">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        {{ isEdit ? 'Guardar cambios' : 'Crear categoría' }}
-      </UiButton>
-      <UiButton
+        :label="isEdit ? 'Guardar cambios' : 'Crear categoría'"
+      />
+      <UButton
         v-if="isEdit"
-        variant="secondary"
+        color="neutral"
+        variant="outline"
+        label="Cancelar"
         :disabled="pending"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
+      />
     </div>
   </form>
 </template>

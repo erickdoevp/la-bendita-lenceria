@@ -19,12 +19,11 @@ const values = reactive({
   adminNotes: '',
 })
 const pending = ref(false)
-const uid = useId()
 
 const refundable = computed(() => refundableAmount(props.payment))
 const amount = computed(() => (values.amount === '' ? refundable.value : toNumber(values.amount)))
 const isTotal = computed(() => amount.value >= refundable.value)
-const reasonOptions = Object.entries(REFUND_REASON_LABELS) as [RefundReason, string][]
+const reasonItems = (Object.entries(REFUND_REASON_LABELS) as [RefundReason, string][]).map(([value, label]) => ({ label, value }))
 
 watch(() => values.amount, () => clearField('amount'))
 watch(() => values.adminNotes, () => clearField('adminNotes'))
@@ -72,112 +71,103 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
-    <p class="flex items-center justify-between rounded-xl bg-surface px-4 py-3 text-sm">
-      <span class="text-ink-muted">Disponible para reembolsar</span>
-      <span class="font-semibold tabular-nums text-ink">{{ formatMoney(refundable) }}</span>
+    <p class="flex items-center justify-between rounded-lg bg-muted px-4 py-3 text-sm">
+      <span class="text-muted">Disponible para reembolsar</span>
+      <span class="font-semibold tabular-nums text-highlighted">{{ formatMoney(refundable) }}</span>
     </p>
 
     <div class="grid gap-5 sm:grid-cols-2">
-      <UiField
-        :id="`${uid}-amount`"
-        v-slot="field"
+      <UFormField
         label="Monto"
-        hint="Vacío = reembolso total."
+        help="Vacío = reembolso total."
         :error="fieldErrors.amount"
-        optional
+        hint="Opcional"
       >
-        <UiInput
-          :id="field.id"
-          v-model="values.amount"
+        <UInput
+          v-model.number="values.amount"
           type="number"
           inputmode="decimal"
           min="0.01"
           :max="refundable"
           step="0.01"
-          prefix="$"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           :placeholder="refundable.toFixed(2)"
-        />
-      </UiField>
+        >
+          <template #leading>
+            <span class="text-muted">$</span>
+          </template>
+        </UInput>
+      </UFormField>
 
-      <UiField
-        :id="`${uid}-reason`"
-        v-slot="field"
+      <UFormField
         label="Motivo"
         :error="fieldErrors.reason"
       >
-        <UiSelect
-          :id="field.id"
+        <USelect
           v-model="values.reason"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
-        >
-          <option
-            v-for="[value, label] in reasonOptions"
-            :key="value"
-            :value="value"
-          >
-            {{ label }}
-          </option>
-        </UiSelect>
-      </UiField>
+          :items="reasonItems"
+        />
+      </UFormField>
     </div>
 
-    <UiField
-      :id="`${uid}-notes`"
-      v-slot="field"
+    <UFormField
       label="Nota interna"
-      optional
-      hint="Se guarda en la orden para saber por qué se reembolsó."
+      help="Se guarda en la orden para saber por qué se reembolsó."
       :error="fieldErrors.adminNotes"
+      hint="Opcional"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.adminNotes"
         maxlength="500"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Talla equivocada, devolvió la prenda"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
-    <UiAlert tone="info">
-      <template v-if="!isTotal">
-        Reembolso parcial: la orden no cambia de estado y el stock no regresa.
-        Si devolvió mercancía, registra la entrada en Inventario.
+    <UAlert
+      color="primary"
+      icon="ph:info"
+    >
+      <template #title>
+        <template v-if="!isTotal">
+          Reembolso parcial: la orden no cambia de estado y el stock no regresa.
+          Si devolvió mercancía, registra la entrada en Inventario.
+        </template>
+        <template v-else-if="order.status === 'DELIVERED'">
+          La orden pasará a Reembolsada, pero el stock <strong>no regresa</strong> porque la mercancía la tiene la clienta.
+          Si la devuelve, registra la entrada en Inventario.
+        </template>
+        <template v-else>
+          La orden pasará a Reembolsada y el stock regresa al inventario.
+        </template>
+        El dinero se devuelve en Stripe y no se puede deshacer.
+    
       </template>
-      <template v-else-if="order.status === 'DELIVERED'">
-        La orden pasará a Reembolsada, pero el stock <strong>no regresa</strong> porque la mercancía la tiene la clienta.
-        Si la devuelve, registra la entrada en Inventario.
-      </template>
-      <template v-else>
-        La orden pasará a Reembolsada y el stock regresa al inventario.
-      </template>
-      El dinero se devuelve en Stripe y no se puede deshacer.
-    </UiAlert>
+    </UAlert>
 
     <div class="flex flex-wrap justify-end gap-2">
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="No reembolsar"
         @click="emit('cancel')"
-      >
-        No reembolsar
-      </UiButton>
-      <UiButton
+      />
+      <UButton
+        color="error"
+        variant="soft"
         type="submit"
-        variant="danger"
         icon="ph:arrow-u-up-left"
         :loading="pending"
       >
         Reembolsar {{ formatMoney(Math.min(amount, refundable)) }}
-      </UiButton>
+      </UButton>
     </div>
   </form>
 </template>

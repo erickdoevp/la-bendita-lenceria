@@ -14,7 +14,7 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Categorías"
       description="Organizan la tienda. Todo artículo pertenece a una categoría o subcategoría."
     />

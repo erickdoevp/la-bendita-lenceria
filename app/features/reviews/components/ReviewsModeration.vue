@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TabsItem } from '@nuxt/ui'
 import { REVIEW_SORTS, emptyReviewFilters } from '../constants'
 import { useReviewsStore } from '../stores/reviews.store'
 import type { ModerationTab, Review, ReviewSort } from '../types'
@@ -27,12 +28,36 @@ const filtering = computed(() => Boolean(
 ))
 const allSelected = computed(() => items.value.length > 0 && items.value.every(r => selected.value.has(r.id)))
 
-const sortOptions = Object.entries(REVIEW_SORTS) as [ReviewSort, { label: string }][]
+const sortItems = (Object.entries(REVIEW_SORTS) as [ReviewSort, { label: string }][]).map(([value, option]) => ({ label: option.label, value }))
 
-const tabs = computed<{ value: ModerationTab, label: string, count?: number | null }[]>(() => [
-  { value: 'pending', label: 'Pendientes', count: store.pendingCount },
+const approved = useSelectAll(store.all.filters, 'approved')
+const rating = useSelectAll(store.all.filters, 'rating')
+const verified = useSelectAll(store.all.filters, 'verifiedPurchase')
+const approvedItems = [
+  { label: 'Todas', value: SELECT_ALL },
+  { label: 'Publicadas', value: 'true' },
+  { label: 'Pendientes', value: 'false' },
+]
+const ratingItems = [
+  { label: 'Todas', value: SELECT_ALL },
+  ...[5, 4, 3, 2, 1].map(star => ({ label: `${star} ${star === 1 ? 'estrella' : 'estrellas'}`, value: String(star) })),
+]
+const verifiedItems = [
+  { label: 'Todas', value: SELECT_ALL },
+  { label: 'Verificada', value: 'true' },
+  { label: 'Sin verificar', value: 'false' },
+]
+
+const tabs = computed<TabsItem[]>(() => [
+  { value: 'pending', label: 'Pendientes', badge: store.pendingCount ? { label: String(store.pendingCount), color: 'primary', variant: 'solid' } : undefined },
   { value: 'all', label: 'Todas' },
 ])
+const tab = computed({
+  get: () => store.tab,
+  set: (value: string | number) => {
+    store.tab = value as ModerationTab
+  },
+})
 
 onMounted(() => {
   // ?productId= permite enlazar "todas las reseñas de este articulo"
@@ -129,149 +154,86 @@ async function onApproveSelected() {
 </script>
 
 <template>
-  <UiPanel>
+  <UCard>
     <div class="grid gap-5">
-      <div
-        class="-mx-5 flex gap-1 border-b border-line px-5 sm:-mx-6 sm:px-6"
-        role="tablist"
+      <UTabs
+        v-model="tab"
+        :items="tabs"
+        :content="false"
+        variant="link"
         aria-label="Vista de reseñas"
-      >
-        <button
-          v-for="item in tabs"
-          :key="item.value"
-          type="button"
-          role="tab"
-          :aria-selected="store.tab === item.value"
-          class="-mb-px inline-flex items-center gap-2 border-b-2 px-3 pb-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-          :class="store.tab === item.value ? 'border-accent text-ink' : 'border-transparent text-ink-muted hover:text-ink'"
-          @click="store.tab = item.value"
-        >
-          {{ item.label }}
-          <span
-            v-if="item.count"
-            class="rounded-full bg-accent px-1.5 text-xs tabular-nums text-accent-ink"
-          >{{ item.count }}</span>
-        </button>
-      </div>
+        class="-mx-4 sm:-mx-6"
+        :ui="{ list: 'px-4 sm:px-6' }"
+      />
 
       <template v-if="store.tab === 'all'">
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="grid gap-1.5">
-            <label
-              for="reviews-approved"
-              class="text-xs font-medium text-ink-muted"
-            >Estado</label>
-            <UiSelect
-              id="reviews-approved"
-              v-model="store.all.filters.approved"
-              class="[&_select]:h-10 [&_select]:text-sm"
-            >
-              <option value="">
-                Todas
-              </option>
-              <option value="true">
-                Publicadas
-              </option>
-              <option value="false">
-                Pendientes
-              </option>
-            </UiSelect>
-          </div>
-          <div class="grid gap-1.5">
-            <label
-              for="reviews-rating"
-              class="text-xs font-medium text-ink-muted"
-            >Calificación</label>
-            <UiSelect
-              id="reviews-rating"
-              v-model="store.all.filters.rating"
-              class="[&_select]:h-10 [&_select]:text-sm"
-            >
-              <option value="">
-                Todas
-              </option>
-              <option
-                v-for="star in [5, 4, 3, 2, 1]"
-                :key="star"
-                :value="String(star)"
-              >
-                {{ star }} {{ star === 1 ? 'estrella' : 'estrellas' }}
-              </option>
-            </UiSelect>
-          </div>
-          <div class="grid gap-1.5">
-            <label
-              for="reviews-verified"
-              class="text-xs font-medium text-ink-muted"
-            >Compra</label>
-            <UiSelect
-              id="reviews-verified"
-              v-model="store.all.filters.verifiedPurchase"
-              class="[&_select]:h-10 [&_select]:text-sm"
-            >
-              <option value="">
-                Todas
-              </option>
-              <option value="true">
-                Verificada
-              </option>
-              <option value="false">
-                Sin verificar
-              </option>
-            </UiSelect>
-          </div>
-          <div class="grid gap-1.5">
-            <label
-              for="reviews-sort"
-              class="text-xs font-medium text-ink-muted"
-            >Orden</label>
-            <UiSelect
-              id="reviews-sort"
+          <UFormField
+            label="Estado"
+            :ui="{ label: 'text-xs text-muted' }"
+          >
+            <USelect
+              v-model="approved"
+              :items="approvedItems"
+            />
+          </UFormField>
+          <UFormField
+            label="Calificación"
+            :ui="{ label: 'text-xs text-muted' }"
+          >
+            <USelect
+              v-model="rating"
+              :items="ratingItems"
+            />
+          </UFormField>
+          <UFormField
+            label="Compra"
+            :ui="{ label: 'text-xs text-muted' }"
+          >
+            <USelect
+              v-model="verified"
+              :items="verifiedItems"
+            />
+          </UFormField>
+          <UFormField
+            label="Orden"
+            :ui="{ label: 'text-xs text-muted' }"
+          >
+            <USelect
               v-model="store.all.filters.sort"
-              class="[&_select]:h-10 [&_select]:text-sm"
-            >
-              <option
-                v-for="[value, option] in sortOptions"
-                :key="value"
-                :value="value"
-              >
-                {{ option.label }}
-              </option>
-            </UiSelect>
-          </div>
+              :items="sortItems"
+            />
+          </UFormField>
         </div>
 
         <div
           v-if="filters.productId || filtering"
           class="flex flex-wrap items-center gap-2 text-sm"
         >
-          <span
+          <UBadge
             v-if="filters.productId"
-            class="inline-flex items-center gap-1 rounded-lg bg-accent/10 py-1 pl-2 pr-1 text-xs text-accent"
+            :label="productName ?? 'Artículo seleccionado'"
           >
-            {{ productName ?? 'Artículo seleccionado' }}
-            <button
-              type="button"
-              class="grid size-5 place-items-center rounded-md hover:bg-accent/15 focus-visible:outline-2 focus-visible:outline-accent"
-              aria-label="Quitar filtro de artículo"
-              @click="store.all.filters.productId = ''; productName = null"
-            >
-              <Icon
-                name="ph:x"
-                class="size-3"
-                aria-hidden="true"
+            <template #trailing>
+              <UButton
+                variant="link"
+                size="xs"
+                icon="ph:x"
+                class="p-0"
+                aria-label="Quitar filtro de artículo"
+                @click="store.all.filters.productId = ''; productName = null"
               />
-            </button>
-          </span>
-          <UiButton
+            </template>
+          </UBadge>
+          <UButton
             v-if="filtering"
+            color="neutral"
             variant="ghost"
             size="sm"
             icon="ph:x"
+            label="Limpiar filtros"
             @click="clearFilters"
-          >
-            Limpiar filtros
-          </UiButton>
+          />
         </div>
 
         <ReviewStatsSummary
@@ -283,53 +245,45 @@ async function onApproveSelected() {
 
       <p
         v-else
-        class="text-sm text-ink-muted"
+        class="text-sm text-muted"
       >
         Las más antiguas primero. Incluye reseñas editadas, que vuelven a revisión. Hasta aprobarlas no se ven en la tienda.
       </p>
 
-      <UiAlert v-if="actionError || list.error">
-        {{ actionError ?? list.error }}
-        <button
-          v-if="list.error"
-          type="button"
-          class="ml-1 font-medium underline underline-offset-2"
-          @click="list.load()"
-        >
-          Reintentar
-        </button>
-      </UiAlert>
-      <UiAlert
+      <UAlert
+        v-if="actionError || list.error"
+        color="error"
+        icon="ph:warning-circle"
+        :title="actionError ?? list.error ?? undefined"
+        :actions="list.error ? retryAction(() => list.load()) : undefined"
+        orientation="horizontal"
+      />
+      <UAlert
         v-else-if="notice"
-        tone="info"
-      >
-        {{ notice }}
-      </UiAlert>
+        color="primary"
+        icon="ph:info"
+        :title="notice"
+      />
 
       <div
         v-if="store.tab === 'pending' && items.length"
         class="flex min-h-9 flex-wrap items-center gap-3 text-sm"
       >
-        <label class="inline-flex cursor-pointer items-center gap-2 text-ink-muted">
-          <input
-            type="checkbox"
-            class="size-4 accent-[var(--accent)]"
-            :checked="allSelected"
-            :indeterminate="selected.size > 0 && !allSelected"
-            :disabled="bulkPending"
-            @change="toggleAll"
-          >
-          {{ selected.size ? `${selected.size} seleccionada(s)` : 'Seleccionar todas en esta página' }}
-        </label>
-        <UiButton
+        <UCheckbox
+          :model-value="allSelected ? true : selected.size ? 'indeterminate' : false"
+          :label="selected.size ? `${selected.size} seleccionada(s)` : 'Seleccionar todas en esta página'"
+          :disabled="bulkPending"
+          :ui="{ label: 'font-normal text-muted' }"
+          @update:model-value="toggleAll"
+        />
+        <UButton
           v-if="selected.size"
           size="sm"
           icon="ph:checks"
           :loading="bulkPending"
+          label="Aprobar seleccionadas"
           @click="onApproveSelected"
-        >
-          Aprobar seleccionadas
-        </UiButton>
+        />
       </div>
 
       <div
@@ -343,16 +297,24 @@ async function onApproveSelected() {
           :key="row"
           class="flex gap-4"
         >
-          <UiSkeleton class="h-15 w-12 shrink-0" />
+          <USkeleton
+            class="h-15 w-12 shrink-0"
+          />
           <div class="grid flex-1 gap-2">
-            <UiSkeleton class="h-4 w-48" />
-            <UiSkeleton class="h-3 w-32" />
-            <UiSkeleton class="h-10" />
+            <USkeleton
+              class="h-4 w-48"
+            />
+            <USkeleton
+              class="h-3 w-32"
+            />
+            <USkeleton
+              class="h-10"
+            />
           </div>
         </div>
       </div>
 
-      <UiEmptyState
+      <UEmpty
         v-else-if="page && !items.length"
         :icon="store.tab === 'pending' ? 'ph:check-circle' : 'ph:chat-centered-text'"
         :title="store.tab === 'pending' ? 'Nada pendiente' : filtering ? 'Sin resultados' : 'Aún no hay reseñas'"
@@ -363,7 +325,7 @@ async function onApproveSelected() {
 
       <div
         v-else-if="items.length"
-        class="-mx-5 divide-y divide-line border-y border-line transition-opacity sm:-mx-6"
+        class="-mx-4 divide-y divide-default border-y border-default transition-opacity sm:-mx-6"
         :class="list.pending && 'opacity-60'"
         :aria-busy="list.pending || undefined"
       >
@@ -383,14 +345,12 @@ async function onApproveSelected() {
         />
       </div>
 
-      <UiPagination
+      <PagePagination
         v-if="page"
-        :page="page.page"
-        :total-pages="page.totalPages"
-        :total-elements="page.totalElements"
+        :page="page"
         :disabled="list.pending"
         @change="list.load"
       />
     </div>
-  </UiPanel>
+  </UCard>
 </template>

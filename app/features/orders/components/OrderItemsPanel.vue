@@ -8,12 +8,12 @@ const count = computed(() => itemsCount(props.order))
 </script>
 
 <template>
-  <UiPanel
+  <UCard
     title="Artículos"
     :description="`${count} ${count === 1 ? 'pieza' : 'piezas'}. Precios con IVA incluido.`"
   >
     <div class="grid gap-5">
-      <ul class="-mx-5 divide-y divide-line border-y border-line sm:-mx-6">
+      <ul class="-mx-5 divide-y divide-default border-y border-default sm:-mx-6">
         <li
           v-for="item in order.items"
           :key="item.id"
@@ -24,37 +24,37 @@ const count = computed(() => itemsCount(props.order))
             :src="item.imageUrl"
             alt=""
             loading="lazy"
-            class="aspect-[4/5] w-11 shrink-0 rounded-lg border border-line object-cover"
+            class="aspect-[4/5] w-11 shrink-0 rounded-lg border border-default object-cover"
           >
           <span
             v-else
-            class="grid aspect-[4/5] w-11 shrink-0 place-items-center rounded-lg bg-surface text-ink-muted"
+            class="grid aspect-[4/5] w-11 shrink-0 place-items-center rounded-lg bg-muted text-muted"
           >
-            <Icon
+            <UIcon
               name="ph:image"
               class="size-4"
               aria-hidden="true"
             />
           </span>
           <span class="grid min-w-0 flex-1 gap-0.5">
-            <span class="truncate font-medium text-ink">{{ item.productName }}</span>
-            <span class="truncate text-xs text-ink-muted">
+            <span class="truncate font-medium text-highlighted">{{ item.productName }}</span>
+            <span class="truncate text-xs text-muted">
               {{ item.colorName }} · {{ item.sizeName }} · <span class="font-mono">{{ item.sku }}</span>
             </span>
           </span>
           <span class="grid shrink-0 justify-items-end gap-0.5 text-sm tabular-nums">
-            <span class="font-medium text-ink">{{ formatMoney(item.subtotal) }}</span>
-            <span class="text-xs text-ink-muted">{{ item.quantity }} × {{ formatMoney(item.unitPrice) }}</span>
+            <span class="font-medium text-highlighted">{{ formatMoney(item.subtotal) }}</span>
+            <span class="text-xs text-muted">{{ item.quantity }} × {{ formatMoney(item.unitPrice) }}</span>
           </span>
         </li>
       </ul>
 
       <dl class="ml-auto grid w-full max-w-xs gap-2 text-sm tabular-nums">
         <div class="flex justify-between gap-4">
-          <dt class="text-ink-muted">
+          <dt class="text-muted">
             Subtotal
           </dt>
-          <dd class="text-ink">
+          <dd class="text-highlighted">
             {{ formatMoney(order.subtotal) }}
           </dd>
         </div>
@@ -62,11 +62,11 @@ const count = computed(() => itemsCount(props.order))
           v-if="order.discountAmount > 0"
           class="flex justify-between gap-4"
         >
-          <dt class="text-ink-muted">
+          <dt class="text-muted">
             Descuento
             <span
               v-if="order.couponCode"
-              class="ml-1 rounded-md bg-accent/10 px-1.5 py-0.5 font-mono text-[11px] text-accent"
+              class="ml-1 rounded-md bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-primary"
             >{{ order.couponCode }}</span>
           </dt>
           <dd class="text-success">
@@ -74,34 +74,34 @@ const count = computed(() => itemsCount(props.order))
           </dd>
         </div>
         <div class="flex justify-between gap-4">
-          <dt class="text-ink-muted">
+          <dt class="text-muted">
             Envío
             <span
               v-if="order.shippingConfigName"
               class="text-xs"
             >({{ order.shippingConfigName }})</span>
           </dt>
-          <dd class="text-ink">
+          <dd class="text-highlighted">
             {{ order.shippingCost > 0 ? formatMoney(order.shippingCost) : 'Gratis' }}
           </dd>
         </div>
-        <div class="flex justify-between gap-4 border-t border-line pt-2 text-base font-semibold">
-          <dt class="text-ink">
+        <div class="flex justify-between gap-4 border-t border-default pt-2 text-base font-semibold">
+          <dt class="text-highlighted">
             Total
           </dt>
-          <dd class="text-ink">
+          <dd class="text-highlighted">
             {{ formatMoney(order.total) }}
           </dd>
         </div>
         <div class="flex justify-between gap-4 text-xs">
-          <dt class="text-ink-muted">
+          <dt class="text-muted">
             IVA incluido
           </dt>
-          <dd class="text-ink-muted">
+          <dd class="text-muted">
             {{ formatMoney(order.taxAmount) }}
           </dd>
         </div>
       </dl>
     </div>
-  </UiPanel>
+  </UCard>
 </template>

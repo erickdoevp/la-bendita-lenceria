@@ -14,20 +14,20 @@ useSeoMeta({
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Existencias"
       description="Stock por variante. Reservado son unidades en pedidos sin pagar: siguen en almacén pero no se pueden vender."
     >
-      <template #actions>
-        <UiButton
-          variant="secondary"
+      <template #links>
+        <UButton
+          color="neutral"
+          variant="outline"
           icon="ph:arrows-down-up"
           :to="INVENTORY_ROUTES.movements"
-        >
-          Ver movimientos
-        </UiButton>
+          label="Ver movimientos"
+        />
       </template>
-    </UiPageHeader>
+    </UPageHeader>
     <LowStockPanel />
     <StockManager />
   </div>

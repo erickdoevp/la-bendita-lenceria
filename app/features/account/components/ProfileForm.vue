@@ -75,9 +75,12 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
     <div class="flex items-center gap-5">
       <CustomerAvatar
@@ -85,14 +88,14 @@ async function onSubmit() {
         size="lg"
       />
       <div class="grid justify-items-start gap-1.5">
-        <UiButton
-          variant="secondary"
+        <UButton
+          color="neutral"
+          variant="outline"
           size="sm"
           icon="ph:camera"
+          :label="previewUser.avatarImgUrl ? 'Cambiar foto' : 'Subir foto'"
           @click="fileInput?.click()"
-        >
-          {{ previewUser.avatarImgUrl ? 'Cambiar foto' : 'Subir foto' }}
-        </UiButton>
+        />
         <input
           ref="fileInput"
           type="file"
@@ -103,8 +106,8 @@ async function onSubmit() {
           @change="onPickAvatar"
         >
         <p
-          class="text-[13px]"
-          :class="avatarError ? 'text-danger' : 'text-ink-muted'"
+          class="text-sm"
+          :class="avatarError ? 'text-error' : 'text-muted'"
         >
           {{ avatarError ?? (avatar ? 'Se guardará al pulsar «Guardar cambios».' : 'JPG, PNG, WebP o AVIF. Máximo 10 MB.') }}
         </p>
@@ -112,103 +115,82 @@ async function onSubmit() {
     </div>
 
     <div class="grid gap-5 sm:grid-cols-2 sm:gap-4">
-      <UiField
-        id="profile-name"
-        v-slot="field"
+      <UFormField
         label="Nombre"
         :error="fieldErrors.name"
         class="sm:col-span-2"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.name"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autocomplete="given-name"
         />
-      </UiField>
-      <UiField
-        id="profile-last-name"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Primer apellido"
         :error="fieldErrors.firstLastName"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.firstLastName"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autocomplete="family-name"
         />
-      </UiField>
-      <UiField
-        id="profile-second-last-name"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Segundo apellido"
-        optional
         :error="fieldErrors.secondLastName"
+        hint="Opcional"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.secondLastName"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
         />
-      </UiField>
-      <UiField
-        id="profile-phone"
-        v-slot="field"
+      </UFormField>
+      <UFormField
         label="Teléfono"
-        optional
         :error="fieldErrors.phoneNumber"
+        hint="Opcional"
       >
-        <UiInput
-          :id="field.id"
+        <UInput
           v-model="values.phoneNumber"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           type="tel"
           inputmode="tel"
           autocomplete="tel-national"
         />
-      </UiField>
+      </UFormField>
     </div>
 
-    <dl class="grid gap-4 rounded-xl bg-surface px-4 py-3 text-sm sm:grid-cols-2">
+    <dl class="grid gap-4 rounded-lg bg-muted px-4 py-3 text-sm sm:grid-cols-2">
       <div class="grid min-w-0 gap-0.5">
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Correo
         </dt>
-        <dd class="truncate text-ink">
+        <dd class="truncate text-highlighted">
           {{ auth.user?.email }}
         </dd>
       </div>
       <div class="grid min-w-0 gap-0.5">
-        <dt class="text-ink-muted">
+        <dt class="text-muted">
           Usuario
         </dt>
-        <dd class="truncate text-ink">
+        <dd class="truncate text-highlighted">
           {{ auth.user?.username }}
         </dd>
       </div>
-      <p class="text-[13px] text-ink-muted sm:col-span-2">
+      <p class="text-sm text-muted sm:col-span-2">
         El correo y el usuario no se pueden cambiar.
       </p>
     </dl>
 
     <div class="flex flex-wrap items-center gap-3">
-      <UiButton
+      <UButton
         type="submit"
         :loading="pending"
-      >
-        Guardar cambios
-      </UiButton>
+        label="Guardar cambios"
+      />
       <p
         v-if="saved"
         role="status"
         class="flex items-center gap-1.5 text-sm text-success"
       >
-        <Icon
+        <UIcon
           name="ph:check-circle"
           class="size-4"
           aria-hidden="true"

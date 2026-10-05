@@ -17,7 +17,6 @@ const values = reactive({
   reason: '',
 })
 const pending = ref(false)
-const uid = useId()
 
 // Los niveles se refrescan al abrir el modal: si cambia lo reservado, el formulario lo refleja
 watch(() => props.levels.stock, (stock, previous) => {
@@ -55,98 +54,85 @@ async function onSubmit() {
     novalidate
     @submit.prevent="onSubmit"
   >
-    <UiAlert v-if="formError">
-      {{ formError }}
-    </UiAlert>
+    <UAlert
+      v-if="formError"
+      color="error"
+      icon="ph:warning-circle"
+      :title="formError"
+    />
 
     <div class="grid gap-5 sm:grid-cols-2">
-      <UiField
-        :id="`${uid}-stock`"
-        v-slot="field"
+      <UFormField
         label="Stock contado"
-        :hint="levels.reservedStock ? `Mínimo ${levels.reservedStock} (reservado en pedidos).` : 'Unidades físicas en almacén.'"
+        :help="levels.reservedStock ? `Mínimo ${levels.reservedStock} (reservado en pedidos).` : 'Unidades físicas en almacén.'"
         :error="fieldErrors.stock"
       >
-        <UiInput
-          :id="field.id"
-          v-model="values.stock"
+        <UInput
+          v-model.number="values.stock"
           type="number"
           inputmode="numeric"
           :min="levels.reservedStock"
           step="1"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
           autofocus
         />
-      </UiField>
+      </UFormField>
 
-      <UiField
-        :id="`${uid}-threshold`"
-        v-slot="field"
+      <UFormField
         label="Umbral de alerta"
-        hint="Avisa cuando lo disponible llega a este número."
+        help="Avisa cuando lo disponible llega a este número."
         :error="fieldErrors.lowStockThreshold"
-        optional
+        hint="Opcional"
       >
-        <UiInput
-          :id="field.id"
-          v-model="values.lowStockThreshold"
+        <UInput
+          v-model.number="values.lowStockThreshold"
           type="number"
           inputmode="numeric"
           min="0"
           step="1"
-          :invalid="field.invalid"
-          :aria-describedby="field.describedBy"
         />
-      </UiField>
+      </UFormField>
     </div>
 
-    <UiField
-      :id="`${uid}-reason`"
-      v-slot="field"
+    <UFormField
       label="Motivo"
-      hint="Queda en el kardex para auditoría."
+      help="Queda en el kardex para auditoría."
       :error="fieldErrors.reason"
     >
-      <UiInput
-        :id="field.id"
+      <UInput
         v-model="values.reason"
         maxlength="255"
-        :invalid="field.invalid"
-        :aria-describedby="field.describedBy"
         placeholder="Conteo mensual"
         autocomplete="off"
       />
-    </UiField>
+    </UFormField>
 
     <p
-      class="flex items-center justify-between rounded-xl bg-surface px-4 py-3 text-sm"
+      class="flex items-center justify-between rounded-lg bg-muted px-4 py-3 text-sm"
       aria-live="polite"
     >
-      <span class="text-ink-muted">Diferencia contra el sistema ({{ levels.stock }})</span>
+      <span class="text-muted">Diferencia contra el sistema ({{ levels.stock }})</span>
       <span
         class="font-semibold tabular-nums"
-        :class="!difference ? 'text-ink-muted' : difference > 0 ? 'text-success' : 'text-danger'"
+        :class="!difference ? 'text-muted' : difference > 0 ? 'text-success' : 'text-error'"
       >
         {{ difference === null ? '-' : difference > 0 ? `+${difference}` : difference }}
       </span>
     </p>
 
     <div class="flex flex-wrap justify-end gap-2">
-      <UiButton
-        variant="secondary"
+      <UButton
+        color="neutral"
+        variant="outline"
         :disabled="pending"
+        label="Cancelar"
         @click="emit('cancel')"
-      >
-        Cancelar
-      </UiButton>
-      <UiButton
+      />
+      <UButton
         type="submit"
         :loading="pending"
         icon="ph:clipboard-text"
-      >
-        Guardar conteo
-      </UiButton>
+        label="Guardar conteo"
+      />
     </div>
   </form>
 </template>

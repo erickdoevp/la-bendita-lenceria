@@ -19,15 +19,17 @@ function onSaved(collection: Collection) {
 
 <template>
   <div class="grid gap-8">
-    <UiPageHeader
+    <UPageHeader
       title="Nueva colección"
       description="Se crea vacía y queda al final de la tienda. Después eliges sus artículos."
     />
-    <UiPanel class="max-w-2xl">
+    <UCard
+      class="max-w-2xl"
+    >
       <CollectionForm
         @saved="onSaved"
         @cancel="navigateTo(COLLECTION_ROUTES.list)"
       />
-    </UiPanel>
+    </UCard>
   </div>
 </template>

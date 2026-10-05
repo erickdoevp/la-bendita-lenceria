@@ -66,27 +66,36 @@ async function onRemove(productIds: string[]) {
 </script>
 
 <template>
-  <UiPanel
-    title="Artículos"
-    description="En el orden en que se ven en la tienda. Los borradores y archivados siguen aquí, pero la tienda no los muestra."
-  >
-    <template #actions>
-      <UiButton
-        size="sm"
-        icon="ph:plus"
-        :disabled="busy"
-        @click="emit('add')"
-      >
-        Agregar artículos
-      </UiButton>
+  <UCard>
+    <template #header>
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="grid gap-1">
+          <h2 class="font-semibold tracking-tight text-highlighted">
+            Artículos
+          </h2>
+          <p class="max-w-[65ch] text-sm leading-relaxed text-muted">
+            En el orden en que se ven en la tienda. Los borradores y archivados siguen aquí, pero la tienda no los muestra.
+          </p>
+        </div>
+          <UButton
+            size="sm"
+            icon="ph:plus"
+            :disabled="busy"
+            label="Agregar artículos"
+            @click="emit('add')"
+          />
+      </div>
     </template>
 
     <div class="grid gap-4">
-      <UiAlert v-if="error">
-        {{ error }}
-      </UiAlert>
+      <UAlert
+        v-if="error"
+        color="error"
+        icon="ph:warning-circle"
+        :title="error"
+      />
 
-      <UiEmptyState
+      <UEmpty
         v-if="!products.length"
         icon="ph:coat-hanger"
         title="Colección vacía"
@@ -95,57 +104,53 @@ async function onRemove(productIds: string[]) {
 
       <template v-else>
         <div class="flex min-h-9 flex-wrap items-center gap-3 text-sm">
-          <label class="inline-flex cursor-pointer items-center gap-2 text-ink-muted">
-            <input
-              type="checkbox"
-              class="size-4 accent-[var(--accent)]"
-              :checked="allSelected"
-              :indeterminate="selected.size > 0 && !allSelected"
-              :disabled="busy"
-              @change="toggleAll"
-            >
-            {{ selected.size ? `${selected.size} seleccionado(s)` : 'Seleccionar todo' }}
-          </label>
+          <UCheckbox
+            :model-value="allSelected ? true : selected.size ? 'indeterminate' : false"
+            :label="selected.size ? `${selected.size} seleccionado(s)` : 'Seleccionar todo'"
+            :disabled="busy"
+            :ui="{ label: 'font-normal text-muted' }"
+            @update:model-value="toggleAll"
+          />
 
           <template v-if="selected.size">
             <template v-if="confirming">
-              <span class="text-ink-muted">¿Quitar de la colección? Los artículos no se borran.</span>
-              <UiButton
-                variant="danger"
+              <span class="text-muted">¿Quitar de la colección? Los artículos no se borran.</span>
+              <UButton
+                color="error"
+                variant="soft"
                 size="sm"
                 :loading="removing"
+                label="Sí, quitar"
                 @click="onRemove([...selected])"
-              >
-                Sí, quitar
-              </UiButton>
-              <UiButton
+              />
+              <UButton
+                color="neutral"
                 variant="ghost"
                 size="sm"
                 :disabled="removing"
+                label="No"
                 @click="confirming = false"
-              >
-                No
-              </UiButton>
+              />
             </template>
-            <UiButton
+            <UButton
               v-else
-              variant="danger"
+              color="error"
+              variant="soft"
               size="sm"
               icon="ph:minus-circle"
               :disabled="busy"
+              label="Quitar seleccionados"
               @click="confirming = true"
-            >
-              Quitar seleccionados
-            </UiButton>
+            />
           </template>
           <span
             v-else
-            class="text-[13px] text-ink-muted"
+            class="text-sm text-muted"
           >Arrastra para reordenar.</span>
         </div>
 
         <ol
-          class="-mx-5 divide-y divide-line border-y border-line transition-opacity sm:-mx-6"
+          class="-mx-4 divide-y divide-default border-y border-default transition-opacity sm:-mx-6"
           :class="busy && 'opacity-60'"
           :aria-busy="busy || undefined"
           aria-label="Artículos de la colección"
@@ -153,52 +158,51 @@ async function onRemove(productIds: string[]) {
           <li
             v-for="(product, index) in items"
             :key="product.id"
-            class="flex items-center gap-3 px-5 py-2.5 transition-colors sm:px-6"
-            :class="dragging === product.id ? 'bg-accent/5' : selected.has(product.id) ? 'bg-accent/5' : 'hover:bg-surface'"
+            class="flex items-center gap-3 px-4 py-2.5 transition-colors sm:px-6"
+            :class="dragging === product.id ? 'bg-primary/5' : selected.has(product.id) ? 'bg-primary/5' : 'hover:bg-muted'"
             :draggable="!busy"
             @dragstart="onDragStart(product, $event)"
             @dragover.prevent="onDragOver(product)"
             @dragend="onDragEnd"
             @drop.prevent
           >
-            <Icon
+            <UIcon
               name="ph:dots-six-vertical"
-              class="size-5 shrink-0 cursor-grab text-ink-muted active:cursor-grabbing"
+              class="size-5 shrink-0 cursor-grab text-muted active:cursor-grabbing"
               aria-hidden="true"
             />
-            <input
-              type="checkbox"
-              class="size-4 shrink-0 accent-[var(--accent)]"
-              :checked="selected.has(product.id)"
+            <UCheckbox
+              :model-value="selected.has(product.id)"
               :disabled="busy"
               :aria-label="`Seleccionar ${product.name}`"
-              @change="toggle(product.id)"
-            >
-            <span class="w-6 shrink-0 text-right text-xs tabular-nums text-ink-muted">{{ index + 1 }}</span>
+              @update:model-value="toggle(product.id)"
+            />
+            <span class="w-6 shrink-0 text-right text-xs tabular-nums text-muted">{{ index + 1 }}</span>
             <img
               v-if="product.primaryImageUrl"
               :src="product.primaryImageUrl"
               alt=""
               loading="lazy"
               draggable="false"
-              class="aspect-[4/5] w-10 shrink-0 rounded-lg border border-line object-cover"
+              class="aspect-[4/5] w-10 shrink-0 rounded-lg border border-default object-cover"
             >
             <span
               v-else
-              class="grid aspect-[4/5] w-10 shrink-0 place-items-center rounded-lg bg-surface text-ink-muted"
+              class="grid aspect-[4/5] w-10 shrink-0 place-items-center rounded-lg bg-muted text-muted"
             >
-              <Icon
+              <UIcon
                 name="ph:image"
                 class="size-4"
                 aria-hidden="true"
               />
             </span>
             <span class="grid min-w-0 flex-1">
-              <span class="truncate font-medium text-ink">{{ product.name }}</span>
-              <span class="text-xs tabular-nums text-ink-muted">{{ formatMoney(product.basePrice) }}</span>
+              <span class="truncate font-medium text-highlighted">{{ product.name }}</span>
+              <span class="text-xs tabular-nums text-muted">{{ formatMoney(product.basePrice) }}</span>
             </span>
             <span class="flex shrink-0 gap-0.5">
-              <UiButton
+              <UButton
+                color="neutral"
                 variant="ghost"
                 size="sm"
                 icon="ph:arrow-up"
@@ -206,7 +210,8 @@ async function onRemove(productIds: string[]) {
                 :aria-label="`Subir ${product.name}`"
                 @click="move(product, -1)"
               />
-              <UiButton
+              <UButton
+                color="neutral"
                 variant="ghost"
                 size="sm"
                 icon="ph:arrow-down"
@@ -214,7 +219,8 @@ async function onRemove(productIds: string[]) {
                 :aria-label="`Bajar ${product.name}`"
                 @click="move(product, 1)"
               />
-              <UiButton
+              <UButton
+                color="neutral"
                 variant="ghost"
                 size="sm"
                 icon="ph:x"
@@ -227,5 +233,5 @@ async function onRemove(productIds: string[]) {
         </ol>
       </template>
     </div>
-  </UiPanel>
+  </UCard>
 </template>

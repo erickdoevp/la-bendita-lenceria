@@ -1,14 +1,46 @@
 @import "tailwindcss";
+@import "@nuxt/ui";
 
-/* Tokens de color: un solo acento (frambuesa) sobre neutros fríos. */
+/*
+ * TEMA GLOBAL. Fuente unica de color para la tienda (utilidades bg-surface,
+ * text-ink, ...) y para Nuxt UI (variables --ui-*). Para cambiar el look de
+ * admin y cuenta se editan estos tokens o los estilos por componente en
+ * app/app.config.ts; no se tocan los componentes.
+ *
+ * Radios: Nuxt UI deriva rounded-sm..3xl de --ui-radius. Con 0.25rem la escala
+ * coincide con la de Tailwind; cambiarlo afecta a TODO el sitio.
+ */
+
+/* Paleta de marca (frambuesa). Nuxt UI la usa como color "primary" (ver app.config.ts). */
+@theme static {
+  --color-frambuesa-50: #fdf2f6;
+  --color-frambuesa-100: #fbe5ee;
+  --color-frambuesa-200: #f8cbdd;
+  --color-frambuesa-300: #ea86aa;
+  --color-frambuesa-400: #e0628f;
+  --color-frambuesa-500: #c93a6f;
+  --color-frambuesa-600: #b4235a;
+  --color-frambuesa-700: #981c4b;
+  --color-frambuesa-800: #7e1a40;
+  --color-frambuesa-900: #6a1a39;
+  --color-frambuesa-950: #3e0a1e;
+}
+
+/* Tokens semanticos: un solo acento (frambuesa) sobre neutros frios. */
 :root {
   --surface: #f6f6f7;
   --surface-raised: #fdfdfd;
+  --surface-elevated: #efeff1;
+  --surface-accented: #e4e4e7;
   --ink: #18181b;
+  --ink-toned: #3f3f46;
   --ink-muted: #52525b;
+  --ink-dimmed: #a1a1aa;
   --line: #d4d4d8;
-  --accent: #b4235a;
-  --accent-hover: #981c4b;
+  --line-muted: #e4e4e7;
+  --line-accented: #a1a1aa;
+  --accent: var(--color-frambuesa-600);
+  --accent-hover: var(--color-frambuesa-700);
   --accent-ink: #fdfdfd;
   --danger: #b91c1c;
   --danger-soft: #fdf2f2;
@@ -16,25 +48,61 @@
   --success-soft: #effaf2;
   --warning: #b45309;
   --warning-soft: #fdf6e9;
+  --info: #1d4ed8;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: #111113;
-    --surface-raised: #18181b;
-    --ink: #f4f4f5;
-    --ink-muted: #a1a1aa;
-    --line: #3f3f46;
-    --accent: #e0628f;
-    --accent-hover: #ea86aa;
-    --accent-ink: #111113;
-    --danger: #f87171;
-    --danger-soft: #2a1414;
-    --success: #4ade80;
-    --success-soft: #11241a;
-    --warning: #fbbf24;
-    --warning-soft: #2a2110;
-  }
+/* Modo oscuro: @nuxtjs/color-mode pone .dark en <html> (por defecto sigue al sistema). */
+.dark {
+  --surface: #111113;
+  --surface-raised: #18181b;
+  --surface-elevated: #232327;
+  --surface-accented: #2e2e33;
+  --ink: #f4f4f5;
+  --ink-toned: #d4d4d8;
+  --ink-muted: #a1a1aa;
+  --ink-dimmed: #71717a;
+  --line: #3f3f46;
+  --line-muted: #2e2e33;
+  --line-accented: #52525b;
+  --accent: var(--color-frambuesa-400);
+  --accent-hover: var(--color-frambuesa-300);
+  --accent-ink: #111113;
+  --danger: #f87171;
+  --danger-soft: #2a1414;
+  --success: #4ade80;
+  --success-soft: #11241a;
+  --warning: #fbbf24;
+  --warning-soft: #2a2110;
+  --info: #60a5fa;
+}
+
+/* Puente hacia Nuxt UI: sus variables leen los tokens de arriba (sin capa, ganan a @layer theme). */
+:root,
+.dark {
+  --ui-radius: 0.25rem;
+  --ui-primary: var(--accent);
+  --ui-success: var(--success);
+  --ui-warning: var(--warning);
+  --ui-error: var(--danger);
+  --ui-info: var(--info);
+
+  --ui-text-dimmed: var(--ink-dimmed);
+  --ui-text-muted: var(--ink-muted);
+  --ui-text-toned: var(--ink-toned);
+  --ui-text: var(--ink);
+  --ui-text-highlighted: var(--ink);
+  --ui-text-inverted: var(--accent-ink);
+
+  --ui-bg: var(--surface-raised);
+  --ui-bg-muted: var(--surface);
+  --ui-bg-elevated: var(--surface-elevated);
+  --ui-bg-accented: var(--surface-accented);
+  --ui-bg-inverted: var(--ink);
+
+  --ui-border: var(--line);
+  --ui-border-muted: var(--line-muted);
+  --ui-border-accented: var(--line-accented);
+  --ui-border-inverted: var(--ink);
 }
 
 @theme inline {

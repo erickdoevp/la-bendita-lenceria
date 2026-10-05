@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TableColumn } from '@nuxt/ui'
 import { ORDER_ROUTES } from '~/features/orders'
 import type { CouponUsage } from '../types'
 
@@ -8,24 +9,28 @@ defineProps<{
   error: string | null
 }>()
 const emit = defineEmits<{ change: [page: number], retry: [] }>()
+
+const columns: TableColumn<CouponUsage>[] = [
+  { accessorKey: 'usedAt', header: 'Fecha' },
+  { accessorKey: 'username', header: 'Clienta' },
+  { accessorKey: 'orderId', header: 'Orden', meta: { class: { th: 'text-right', td: 'text-right' } } },
+]
 </script>
 
 <template>
-  <UiPanel
+  <UCard
     title="Usos"
     description="Quién lo usó y en qué orden. Si una orden se canceló sin pagar, su uso se devolvió y no aparece."
   >
     <div class="grid gap-5">
-      <UiAlert v-if="error">
-        {{ error }}
-        <button
-          type="button"
-          class="ml-1 font-medium underline underline-offset-2"
-          @click="emit('retry')"
-        >
-          Reintentar
-        </button>
-      </UiAlert>
+      <UAlert
+        v-if="error"
+        color="error"
+        icon="ph:warning-circle"
+        :title="error"
+        :actions="retryAction(() => emit('retry'))"
+        orientation="horizontal"
+      />
 
       <div
         v-else-if="pending && !page"
@@ -33,7 +38,7 @@ const emit = defineEmits<{ change: [page: number], retry: [] }>()
         role="status"
         aria-label="Cargando usos"
       >
-        <UiSkeleton
+        <USkeleton
           v-for="row in 3"
           :key="row"
           class="h-5"
@@ -42,70 +47,44 @@ const emit = defineEmits<{ change: [page: number], retry: [] }>()
 
       <p
         v-else-if="page && !page.items.length"
-        class="text-sm text-ink-muted"
+        class="text-sm text-muted"
       >
         Nadie lo ha usado todavía.
       </p>
 
-      <div
+      <UTable
         v-else-if="page"
-        class="-mx-5 overflow-x-auto sm:-mx-6"
+        :data="page.items"
+        :columns="columns"
+        :class="['-mx-4 sm:-mx-6 transition-opacity', pending && 'opacity-60']"
       >
-        <table class="w-full text-left text-sm">
-          <thead class="text-ink-muted">
-            <tr>
-              <th class="px-5 pb-3 font-medium sm:px-6">
-                Fecha
-              </th>
-              <th class="pb-3 pr-4 font-medium">
-                Clienta
-              </th>
-              <th class="px-5 pb-3 text-right font-medium sm:px-6">
-                Orden
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="divide-y divide-line border-t border-line transition-opacity"
-            :class="pending && 'opacity-60'"
+        <template #usedAt-cell="{ row }">
+          <span class="tabular-nums">{{ formatDateTime(row.original.usedAt) }}</span>
+        </template>
+        <template #username-cell="{ row }">
+          <span class="text-highlighted">{{ row.original.username }}</span>
+        </template>
+        <template #orderId-cell="{ row }">
+          <ULink
+            :to="ORDER_ROUTES.detail(row.original.orderId)"
+            class="inline-flex items-center gap-1 font-mono text-primary hover:underline"
+            :title="`Ver la orden ${row.original.orderId}`"
           >
-            <tr
-              v-for="usage in page.items"
-              :key="usage.id"
-            >
-              <td class="whitespace-nowrap px-5 py-3 tabular-nums text-ink-muted sm:px-6">
-                {{ formatDateTime(usage.usedAt) }}
-              </td>
-              <td class="py-3 pr-4 text-ink">
-                {{ usage.username }}
-              </td>
-              <td class="px-5 py-3 text-right sm:px-6">
-                <NuxtLink
-                  :to="ORDER_ROUTES.detail(usage.orderId)"
-                  class="inline-flex items-center gap-1 font-mono text-accent hover:underline"
-                  :title="`Ver la orden ${usage.orderId}`"
-                >
-                  <Icon
-                    name="ph:receipt"
-                    class="size-3.5"
-                    aria-hidden="true"
-                  />
-                  #{{ usage.orderId.slice(0, 8) }}
-                </NuxtLink>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            <UIcon
+              name="ph:receipt"
+              class="size-3.5"
+            />
+            #{{ row.original.orderId.slice(0, 8) }}
+          </ULink>
+        </template>
+      </UTable>
 
-      <UiPagination
+      <PagePagination
         v-if="page"
-        :page="page.page"
-        :total-pages="page.totalPages"
-        :total-elements="page.totalElements"
+        :page="page"
         :disabled="pending"
         @change="emit('change', $event)"
       />
     </div>
-  </UiPanel>
+  </UCard>
 </template>

@@ -75,60 +75,49 @@ async function onDone(message: string) {
 <template>
   <div class="grid gap-8">
     <div class="grid gap-3">
-      <NuxtLink
+      <UButton
         :to="ORDER_ROUTES.list"
-        class="inline-flex items-center gap-1.5 justify-self-start rounded-md text-sm text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
-      >
-        <Icon
-          name="ph:arrow-left"
-          class="size-4"
-          aria-hidden="true"
-        />
-        Órdenes
-      </NuxtLink>
+        color="neutral"
+        variant="link"
+        icon="ph:arrow-left"
+        label="Órdenes"
+        class="justify-self-start px-0"
+      />
 
-      <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div class="grid gap-2">
-          <div class="flex flex-wrap items-center gap-3">
-            <h1 class="font-mono text-2xl font-semibold tracking-tight text-ink md:text-3xl">
-              {{ order?.orderNumber ?? 'Orden' }}
-            </h1>
+      <UPageHeader
+        :description="order ? `Creada el ${formatDateTime(order.createdAt)} · Actualizada el ${formatDateTime(order.updatedAt)}` : undefined"
+      >
+        <template #title>
+          <span class="flex flex-wrap items-center gap-3">
+            <span class="font-mono">{{ order?.orderNumber ?? 'Orden' }}</span>
             <OrderStatusBadge
               v-if="order"
               :status="order.status"
             />
-          </div>
-          <p
-            v-if="order"
-            class="text-ink-muted"
-          >
-            Creada el {{ formatDateTime(order.createdAt) }} · Actualizada el {{ formatDateTime(order.updatedAt) }}
-          </p>
-        </div>
-        <UiButton
-          variant="ghost"
-          size="sm"
-          icon="ph:arrow-clockwise"
-          :loading="pending && Boolean(order)"
-          :disabled="!order"
-          @click="load"
-        >
-          Actualizar
-        </UiButton>
-      </header>
+          </span>
+        </template>
+        <template #links>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="ph:arrow-clockwise"
+            :loading="pending && Boolean(order)"
+            :disabled="!order"
+            label="Actualizar"
+            @click="load"
+          />
+        </template>
+      </UPageHeader>
     </div>
 
-    <UiAlert v-if="error">
-      {{ error.status === 404 ? 'Esta orden no existe.' : error.message }}
-      <button
-        v-if="error.status !== 404"
-        type="button"
-        class="ml-1 font-medium underline underline-offset-2"
-        @click="load"
-      >
-        Reintentar
-      </button>
-    </UiAlert>
+    <UAlert
+      v-if="error"
+      color="error"
+      icon="ph:warning-circle"
+      :title="error.status === 404 ? 'Esta orden no existe.' : error.message"
+      :actions="error.status !== 404 ? retryAction(load) : undefined"
+      orientation="horizontal"
+    />
 
     <div
       v-else-if="pending && !order"
@@ -136,51 +125,57 @@ async function onDone(message: string) {
       role="status"
       aria-label="Cargando orden"
     >
-      <UiSkeleton class="h-80 rounded-2xl" />
+      <USkeleton
+        class="h-80 rounded-lg"
+      />
       <div class="grid content-start gap-6">
-        <UiSkeleton class="h-44 rounded-2xl" />
-        <UiSkeleton class="h-36 rounded-2xl" />
+        <USkeleton
+          class="h-44 rounded-lg"
+        />
+        <USkeleton
+          class="h-36 rounded-lg"
+        />
       </div>
     </div>
 
     <template v-else-if="order">
-      <UiAlert
+      <UAlert
         v-if="notice"
-        tone="info"
-      >
-        {{ notice }}
-      </UiAlert>
+        color="primary"
+        icon="ph:info"
+        :title="notice"
+      />
 
       <section
         v-if="mainActions.length || dangerActions.length"
-        class="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-surface-raised p-4"
+        class="flex flex-wrap items-center gap-2 rounded-lg border border-default bg-default p-4"
         aria-label="Acciones de la orden"
       >
-        <UiButton
+        <UButton
           v-for="(item, index) in mainActions"
           :key="item"
-          :variant="index === 0 ? 'primary' : 'secondary'"
+          :color="index === 0 ? 'primary' : 'neutral'"
+          :variant="index === 0 ? 'solid' : 'outline'"
           :icon="ACTION_META[item].icon"
           :disabled="pending"
+          :label="label(item)"
           @click="open(item)"
-        >
-          {{ label(item) }}
-        </UiButton>
+        />
         <span
           v-if="!mainActions.length"
-          class="text-sm text-ink-muted"
+          class="text-sm text-muted"
         >No hay pasos pendientes para esta orden.</span>
         <div class="flex flex-wrap gap-2 sm:ml-auto">
-          <UiButton
+          <UButton
             v-for="item in dangerActions"
             :key="item"
-            variant="danger"
+            color="error"
+            variant="soft"
             :icon="ACTION_META[item].icon"
             :disabled="pending"
+            :label="label(item)"
             @click="open(item)"
-          >
-            {{ label(item) }}
-          </UiButton>
+          />
         </div>
       </section>
 
@@ -210,76 +205,79 @@ async function onDone(message: string) {
         </div>
       </div>
 
-      <UiModal
+      <UModal
         v-model:open="modalOpen"
         :title="action ? ACTION_META[action].title : ''"
         :description="action ? ACTION_META[action].description : undefined"
       >
-        <OrderStatusForm
-          v-if="action === 'process' || action === 'cancel' || action === 'notes'"
-          :order="order"
-          :mode="action"
-          :paid="paid"
-          @done="onDone"
-          @cancel="action = null"
-        />
-        <ShipmentForm
-          v-else-if="action === 'ship'"
-          :order="order"
-          @done="onDone"
-          @cancel="action = null"
-        />
-        <ShipmentStatusForm
-          v-else-if="action === 'shipment-status' && shipment"
-          :shipment="shipment"
-          @done="onDone"
-          @cancel="action = null"
-        />
-        <RefundForm
-          v-else-if="action === 'refund' && payment"
-          :order="order"
-          :payment="payment"
-          @done="onDone"
-          @cancel="action = null"
-        />
-        <PickupCollectForm
-          v-else-if="action === 'collected'"
-          :order="order"
-          @done="onDone"
-          @cancel="action = null"
-        />
-        <OrderConfirmAction
-          v-else-if="action === 'ready'"
-          message="Se genera el código de recogida que la clienta presentará en tienda."
-          confirm-label="Marcar lista"
-          done-message="Orden lista para recoger. Ya se generó el código."
-          icon="ph:storefront"
-          :run="() => api.markReadyForPickup(order!.id)"
-          @done="onDone"
-          @cancel="action = null"
-        />
-        <OrderConfirmAction
-          v-else-if="action === 'confirm-payment' && payment"
-          :message="`Confirma solo si ya recibiste ${formatMoney(payment.amount)}. La orden pasará a Pagada y se descontará el stock.`"
-          confirm-label="Sí, confirmar pago"
-          done-message="Pago confirmado. La orden quedó como pagada."
-          icon="ph:check-circle"
-          :run="() => api.confirmPayment(payment!.id)"
-          @done="onDone"
-          @cancel="action = null"
-        />
-        <OrderConfirmAction
-          v-else-if="action === 'fail-payment' && payment"
-          message="El pago quedará como fallido. La orden sigue pendiente de pago y la clienta puede volver a intentarlo."
-          confirm-label="Marcar fallido"
-          done-message="Pago marcado como fallido."
-          icon="ph:warning-circle"
-          variant="danger"
-          :run="() => api.failPayment(payment!.id)"
-          @done="onDone"
-          @cancel="action = null"
-        />
-      </UiModal>
+        <template #body>
+          <OrderStatusForm
+            v-if="action === 'process' || action === 'cancel' || action === 'notes'"
+            :order="order"
+            :mode="action"
+            :paid="paid"
+            @done="onDone"
+            @cancel="action = null"
+          />
+          <ShipmentForm
+            v-else-if="action === 'ship'"
+            :order="order"
+            @done="onDone"
+            @cancel="action = null"
+          />
+          <ShipmentStatusForm
+            v-else-if="action === 'shipment-status' && shipment"
+            :shipment="shipment"
+            @done="onDone"
+            @cancel="action = null"
+          />
+          <RefundForm
+            v-else-if="action === 'refund' && payment"
+            :order="order"
+            :payment="payment"
+            @done="onDone"
+            @cancel="action = null"
+          />
+          <PickupCollectForm
+            v-else-if="action === 'collected'"
+            :order="order"
+            @done="onDone"
+            @cancel="action = null"
+          />
+          <OrderConfirmAction
+            v-else-if="action === 'ready'"
+            message="Se genera el código de recogida que la clienta presentará en tienda."
+            confirm-label="Marcar lista"
+            done-message="Orden lista para recoger. Ya se generó el código."
+            icon="ph:storefront"
+            :run="() => api.markReadyForPickup(order!.id)"
+            @done="onDone"
+            @cancel="action = null"
+          />
+          <OrderConfirmAction
+            v-else-if="action === 'confirm-payment' && payment"
+            :message="`Confirma solo si ya recibiste ${formatMoney(payment.amount)}. La orden pasará a Pagada y se descontará el stock.`"
+            confirm-label="Sí, confirmar pago"
+            done-message="Pago confirmado. La orden quedó como pagada."
+            icon="ph:check-circle"
+            :run="() => api.confirmPayment(payment!.id)"
+            @done="onDone"
+            @cancel="action = null"
+          />
+          <OrderConfirmAction
+            v-else-if="action === 'fail-payment' && payment"
+            message="El pago quedará como fallido. La orden sigue pendiente de pago y la clienta puede volver a intentarlo."
+            confirm-label="Marcar fallido"
+            done-message="Pago marcado como fallido."
+            icon="ph:warning-circle"
+            variant="danger"
+            :run="() => api.failPayment(payment!.id)"
+            @done="onDone"
+            @cancel="action = null"
+          />
+      
+        </template>
+      </UModal>
     </template>
   </div>
 </template>
