@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { CustomerMenu } from '~/features/customer-auth'
-import { STORE_NAV_LINKS } from '../constants'
+import type { NavCategory } from '../composables/useStoreNavigation'
+import type { StoreNavLink } from '../constants'
+
+defineProps<{
+  roots: NavCategory[]
+  leading: StoreNavLink[]
+  trailing: StoreNavLink[]
+}>()
 
 const open = defineModel<boolean>('open', { required: true })
 const dialog = ref<HTMLDialogElement | null>(null)
@@ -52,19 +59,64 @@ function onClick(event: MouseEvent) {
       >
         <ul class="grid gap-1">
           <li
-            v-for="link in STORE_NAV_LINKS"
+            v-for="link in leading"
             :key="link.to"
           >
             <NuxtLink
               :to="link.to"
-              class="flex h-12 items-center justify-between rounded-xl px-3 text-lg font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+              class="flex h-12 items-center rounded-xl px-3 text-lg font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
             >
               {{ link.label }}
-              <Icon
-                name="ph:caret-right"
-                class="size-4 text-ink-muted"
-                aria-hidden="true"
-              />
+            </NuxtLink>
+          </li>
+
+          <!-- Cada raiz se despliega con sus subcategorias; el tercer nivel queda en el listado -->
+          <li
+            v-for="root in roots"
+            :key="root.id"
+          >
+            <details class="group/root">
+              <summary class="flex h-12 cursor-pointer list-none items-center justify-between rounded-xl px-3 text-lg font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+                {{ root.name }}
+                <Icon
+                  name="ph:caret-down"
+                  class="size-4 text-ink-muted transition-transform duration-200 group-open/root:rotate-180"
+                  aria-hidden="true"
+                />
+              </summary>
+              <ul class="grid gap-0.5 pb-2 pl-3">
+                <li>
+                  <NuxtLink
+                    :to="root.to"
+                    class="flex h-10 items-center rounded-xl px-3 text-[15px] font-medium text-accent hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+                  >
+                    Ver todo {{ root.name.toLowerCase() }}
+                  </NuxtLink>
+                </li>
+                <li
+                  v-for="child in root.children"
+                  :key="child.id"
+                >
+                  <NuxtLink
+                    :to="child.to"
+                    class="flex h-10 items-center rounded-xl px-3 text-[15px] text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+                  >
+                    {{ child.name }}
+                  </NuxtLink>
+                </li>
+              </ul>
+            </details>
+          </li>
+
+          <li
+            v-for="link in trailing"
+            :key="link.to"
+          >
+            <NuxtLink
+              :to="link.to"
+              class="flex h-12 items-center rounded-xl px-3 text-lg font-medium transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              {{ link.label }}
             </NuxtLink>
           </li>
         </ul>

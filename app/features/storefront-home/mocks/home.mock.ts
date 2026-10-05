@@ -1,17 +1,7 @@
 // Datos de ejemplo del inicio. Imitan la forma que tendran tras mapear los DTOs del backend.
 import { STORE_ROUTES } from '~/features/store-catalog'
-import type { HomeCategory, HomeCollection, HomeHeroContent, StoreProduct } from '../types'
+import type { HomeCategory, HomeCollection, HomeHeroContent } from '../types'
 import { MOCK_IMAGES as img } from './images'
-
-const COLORS = {
-  negro: { name: 'Negro', hex: '#1f1f23' },
-  carmin: { name: 'Carmín', hex: '#a3203f' },
-  rosa: { name: 'Rosa palo', hex: '#e7b9c2' },
-  marfil: { name: 'Marfil', hex: '#efe9df' },
-  marino: { name: 'Azul marino', hex: '#26324f' },
-  cielo: { name: 'Azul cielo', hex: '#8fb4d9' },
-  nude: { name: 'Nude', hex: '#d2a98c' },
-} as const
 
 export const HOME_HERO_MOCK: HomeHeroContent = {
   eyebrow: 'Colección Carmín',
@@ -24,111 +14,12 @@ export const HOME_HERO_MOCK: HomeHeroContent = {
   detailImage: { src: img.heroDetailStrap, alt: 'Manos ajustando el tirante de un brasier negro' },
 }
 
-export const LATEST_PRODUCTS_MOCK: StoreProduct[] = [
-  {
-    id: 'p-01',
-    name: 'Brasier Lirio con varilla',
-    slug: 'brasier-lirio-con-varilla',
-    price: 649,
-    compareAtPrice: null,
-    categoryName: 'Brasieres',
-    imageUrl: img.productFloralBra,
-    hoverImageUrl: null,
-    colors: [COLORS.rosa, COLORS.marfil],
-    isNew: true,
-  },
-  {
-    id: 'p-02',
-    name: 'Pijama Bruma de satín',
-    slug: 'pijama-bruma-de-satin',
-    price: 1190,
-    compareAtPrice: 1390,
-    categoryName: 'Pijamas',
-    imageUrl: img.productPinkSatin,
-    hoverImageUrl: img.productPinkSatinAlt,
-    colors: [COLORS.rosa, COLORS.marino, COLORS.marfil],
-    isNew: true,
-  },
-  {
-    id: 'p-03',
-    name: 'Conjunto Noche de encaje',
-    slug: 'conjunto-noche-de-encaje',
-    price: 899,
-    compareAtPrice: null,
-    categoryName: 'Conjuntos',
-    imageUrl: img.productBlackLaceSet,
-    hoverImageUrl: null,
-    colors: [COLORS.negro, COLORS.carmin],
-    isNew: true,
-  },
-  {
-    id: 'p-04',
-    name: 'Brasier Sombra push up',
-    slug: 'brasier-sombra-push-up',
-    price: 579,
-    compareAtPrice: null,
-    categoryName: 'Brasieres',
-    imageUrl: img.productBlackBra,
-    hoverImageUrl: null,
-    colors: [COLORS.negro, COLORS.nude, COLORS.marfil, COLORS.rosa, COLORS.marino],
-    isNew: false,
-  },
-  {
-    id: 'p-05',
-    name: 'Set Aurora de satín',
-    slug: 'set-aurora-de-satin',
-    price: 1290,
-    compareAtPrice: null,
-    categoryName: 'Pijamas',
-    imageUrl: img.productSatinSet,
-    hoverImageUrl: null,
-    colors: [COLORS.marfil, COLORS.rosa],
-    isNew: true,
-  },
-  {
-    id: 'p-06',
-    name: 'Top Brisa deportivo',
-    slug: 'top-brisa-deportivo',
-    price: 459,
-    compareAtPrice: 529,
-    categoryName: 'Básicos',
-    imageUrl: img.productSportBra,
-    hoverImageUrl: null,
-    colors: [COLORS.marfil, COLORS.negro, COLORS.cielo],
-    isNew: false,
-  },
-  {
-    id: 'p-07',
-    name: 'Conjunto Pétalo',
-    slug: 'conjunto-petalo',
-    price: 849,
-    compareAtPrice: null,
-    categoryName: 'Conjuntos',
-    imageUrl: img.productPinkLingerie,
-    hoverImageUrl: null,
-    colors: [COLORS.rosa],
-    isNew: true,
-  },
-  {
-    id: 'p-08',
-    name: 'Pijama Clásica de algodón',
-    slug: 'pijama-clasica-de-algodon',
-    price: 949,
-    compareAtPrice: null,
-    categoryName: 'Pijamas',
-    imageUrl: img.productPajamaHanger,
-    hoverImageUrl: null,
-    colors: [COLORS.rosa, COLORS.cielo],
-    isNew: false,
-  },
-]
-
 export const HOME_CATEGORIES_MOCK: HomeCategory[] = [
-  { id: 'c-01', name: 'Brasieres', slug: 'brasieres', imageUrl: img.categoryBras, summary: 'Con varilla, sin varilla y push up' },
-  { id: 'c-02', name: 'Conjuntos', slug: 'conjuntos', imageUrl: img.categorySets, summary: 'Brasier y panty a juego' },
-  { id: 'c-03', name: 'Bralettes', slug: 'bralettes', imageUrl: img.categoryBralettes, summary: 'Encaje ligero, sin relleno' },
-  { id: 'c-04', name: 'Pijamas', slug: 'pijamas', imageUrl: img.categoryPajamas, summary: 'Satín y algodón' },
-  { id: 'c-05', name: 'Básicos', slug: 'basicos', imageUrl: img.categoryBasics, summary: 'Para diario y deporte' },
+  { id: 'c-01', name: 'Brasieres', slugs: ['lenceria', 'brasieres'], imageUrl: img.categoryBras, summary: 'Push up, con varilla y sin varilla' },
+  { id: 'c-02', name: 'Trajes de baño', slugs: ['trajes-de-bano'], imageUrl: img.categorySwim, summary: 'Bikinis y completos' },
+  { id: 'c-03', name: 'Bralettes', slugs: ['lenceria', 'bralettes'], imageUrl: img.categoryBralettes, summary: 'Encaje ligero, sin relleno' },
+  { id: 'c-04', name: 'Pijamas', slugs: ['pijamas'], imageUrl: img.categoryPajamas, summary: 'Satín y algodón' },
+  { id: 'c-05', name: 'Conjuntos', slugs: ['lenceria', 'conjuntos'], imageUrl: img.categorySets, summary: 'Brasier y panty a juego' },
 ]
 
 export const HOME_COLLECTIONS_MOCK: HomeCollection[] = [

@@ -79,7 +79,7 @@ const cellClass = (index: number) =>
               :class="index === 0 ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'"
             >
               <NuxtLink
-                :to="STORE_ROUTES.category(category.slug)"
+                :to="STORE_ROUTES.category(...category.slugs)"
                 class="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:rounded-2xl focus-visible:after:outline-2 focus-visible:after:-outline-offset-4 focus-visible:after:outline-zinc-50"
               >
                 {{ category.name }}

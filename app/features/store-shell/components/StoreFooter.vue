@@ -1,7 +1,15 @@
 <script setup lang="ts">
+import { useStoreNavigation } from '../composables/useStoreNavigation'
 import { STORE_FOOTER_GROUPS, STORE_SOCIAL_LINKS } from '../constants'
 
 const year = new Date().getFullYear()
+const { roots, leading } = await useStoreNavigation()
+
+// El grupo "Tienda" se arma con las categorias raiz del backend
+const groups = computed(() => [
+  { title: 'Tienda', links: [...leading, ...roots.value.map(root => ({ label: root.name, to: root.to }))] },
+  ...STORE_FOOTER_GROUPS,
+])
 </script>
 
 <template>
@@ -44,7 +52,7 @@ const year = new Date().getFullYear()
         class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3"
       >
         <div
-          v-for="group in STORE_FOOTER_GROUPS"
+          v-for="group in groups"
           :key="group.title"
           class="grid content-start gap-4"
         >

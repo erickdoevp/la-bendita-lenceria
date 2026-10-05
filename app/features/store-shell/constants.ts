@@ -5,26 +5,17 @@ export interface StoreNavLink {
   to: string
 }
 
-// TODO: generar desde GET /categories/tree cuando el backend este integrado
-export const STORE_NAV_LINKS: StoreNavLink[] = [
+// Enlaces fijos alrededor de las categorias raiz, que llegan del backend
+export const STORE_NAV_LEADING: StoreNavLink[] = [
   { label: 'Novedades', to: STORE_ROUTES.newArrivals },
-  { label: 'Brasieres', to: STORE_ROUTES.category('brasieres') },
-  { label: 'Conjuntos', to: STORE_ROUTES.category('conjuntos') },
-  { label: 'Pijamas', to: STORE_ROUTES.category('pijamas') },
+]
+
+export const STORE_NAV_TRAILING: StoreNavLink[] = [
   { label: 'Colecciones', to: STORE_ROUTES.collections },
 ]
 
+/** Grupos fijos del pie; el grupo "Tienda" se arma con las categorias raiz. */
 export const STORE_FOOTER_GROUPS: { title: string, links: StoreNavLink[] }[] = [
-  {
-    title: 'Tienda',
-    links: [
-      { label: 'Novedades', to: STORE_ROUTES.newArrivals },
-      { label: 'Brasieres', to: STORE_ROUTES.category('brasieres') },
-      { label: 'Bralettes', to: STORE_ROUTES.category('bralettes') },
-      { label: 'Conjuntos', to: STORE_ROUTES.category('conjuntos') },
-      { label: 'Pijamas', to: STORE_ROUTES.category('pijamas') },
-    ],
-  },
   {
     title: 'Ayuda',
     links: [

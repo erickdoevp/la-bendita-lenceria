@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { CustomerMenu } from '~/features/customer-auth'
 import { STORE_ROUTES } from '~/features/store-catalog'
-import { STORE_ANNOUNCEMENT, STORE_NAV_LINKS } from '../constants'
+import { useStoreNavigation } from '../composables/useStoreNavigation'
+import { STORE_ANNOUNCEMENT } from '../constants'
+import StoreDesktopNav from './StoreDesktopNav.vue'
 import StoreMobileMenu from './StoreMobileMenu.vue'
 
-const route = useRoute()
 const menuOpen = ref(false)
+const { roots, leading, trailing } = await useStoreNavigation()
 
 // TODO: leer del store del carrito cuando exista
 const cartCount = 0
-
-const isActive = (to: string) => route.path === to || route.path.startsWith(`${to}/`)
 </script>
 
 <template>
@@ -44,26 +44,11 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(`${t
         </NuxtLink>
       </div>
 
-      <nav
-        aria-label="Principal"
-        class="hidden lg:block"
-      >
-        <ul class="flex items-center gap-1">
-          <li
-            v-for="link in STORE_NAV_LINKS"
-            :key="link.to"
-          >
-            <NuxtLink
-              :to="link.to"
-              class="inline-flex h-10 items-center whitespace-nowrap rounded-xl px-3.5 text-sm font-medium transition-colors hover:bg-surface hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
-              :class="isActive(link.to) ? 'text-accent' : 'text-ink-muted'"
-              :aria-current="isActive(link.to) ? 'page' : undefined"
-            >
-              {{ link.label }}
-            </NuxtLink>
-          </li>
-        </ul>
-      </nav>
+      <StoreDesktopNav
+        :roots="roots"
+        :leading="leading"
+        :trailing="trailing"
+      />
 
       <div class="flex items-center justify-end gap-1">
         <NuxtLink
@@ -99,6 +84,11 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(`${t
       </div>
     </div>
 
-    <StoreMobileMenu v-model:open="menuOpen" />
+    <StoreMobileMenu
+      v-model:open="menuOpen"
+      :roots="roots"
+      :leading="leading"
+      :trailing="trailing"
+    />
   </header>
 </template>

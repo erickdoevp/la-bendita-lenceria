@@ -22,3 +22,26 @@ export interface StoreProduct {
   colors: StoreColor[]
   isNew: boolean
 }
+
+/**
+ * Nodo del arbol publico de categorias (deriva de CategoryNode de GET /categories/tree).
+ * Raiz (Lenceria) -> subcategoria (Brasieres) -> tipo (Push up): maximo 3 niveles.
+ */
+export interface StoreCategory {
+  id: string
+  name: string
+  slug: string
+  /** Texto plano para la cabecera del listado. */
+  summary: string | null
+  imageUrl: string | null
+  children: StoreCategory[]
+}
+
+/** Categoria resuelta desde la URL, con su camino desde la raiz. */
+export interface ResolvedCategory {
+  category: StoreCategory
+  /** [raiz, ..., categoria actual] */
+  trail: StoreCategory[]
+  /** Ruta publica: /lenceria/brasieres/push-up */
+  path: string
+}

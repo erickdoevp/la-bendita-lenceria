@@ -8,7 +8,8 @@ export type { StoreProduct }
 export interface HomeCategory {
   id: string
   name: string
-  slug: string
+  /** Camino de slugs desde la raiz: ['lenceria', 'brasieres']. */
+  slugs: string[]
   imageUrl: string
   /** Frase corta bajo el nombre. */
   summary: string

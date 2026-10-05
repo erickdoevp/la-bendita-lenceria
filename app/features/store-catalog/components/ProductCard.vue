@@ -16,7 +16,7 @@ const extraColors = computed(() => Math.max(0, props.product.colors.length - MAX
 </script>
 
 <template>
-  <article class="group relative grid gap-3">
+  <article class="group relative grid min-w-0 gap-3">
     <div class="relative aspect-[4/5] overflow-hidden rounded-2xl bg-line/40">
       <img
         v-if="product.imageUrl"
@@ -79,8 +79,8 @@ const extraColors = computed(() => Math.max(0, props.product.colors.length - MAX
           {{ product.name }}
         </NuxtLink>
       </h3>
-      <div class="flex items-center justify-between gap-3">
-        <p class="flex items-baseline gap-2 text-[15px] tabular-nums">
+      <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+        <p class="flex flex-wrap items-baseline gap-x-2 text-[15px] tabular-nums">
           <span :class="onSale ? 'font-semibold text-accent' : 'text-ink'">{{ formatMoney(product.price) }}</span>
           <s
             v-if="onSale && product.compareAtPrice"
