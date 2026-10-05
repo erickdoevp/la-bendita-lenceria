@@ -53,7 +53,13 @@ function submit() {
     return
   }
   if (variant.stock <= 0) return
-  bag.add(variant, quantity.value)
+  bag.add({
+    product: props.product,
+    variant,
+    color: selection.color.value,
+    imageUrl: selection.images.value[0]?.url ?? null,
+    quantity: quantity.value,
+  })
 }
 
 // La barra fija aparece cuando el panel de compra ya quedo arriba, fuera de la pantalla

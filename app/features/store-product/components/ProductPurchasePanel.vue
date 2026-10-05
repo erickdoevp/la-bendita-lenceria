@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RatingStars } from '~/features/reviews'
-import { STORE_ROUTES } from '~/features/store-catalog'
+import { useCartStore } from '~/features/store-cart'
 import { LOW_STOCK_THRESHOLD, MAX_QUANTITY, PRODUCT_SERVICE_NOTES } from '../constants'
 import type { AddToBagState } from '../composables/useAddToBag'
 import type { VariantSelection } from '../composables/useVariantSelection'
@@ -20,6 +20,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ submit: [], openGuide: [] }>()
 const quantity = defineModel<number>('quantity', { required: true })
+const cart = useCartStore()
 
 const { color, colorKey, size, variant, price, availability, colorSoldOut, setColor, setSize } = props.selection
 
@@ -174,12 +175,13 @@ const ratingLabel = computed(() => {
           aria-hidden="true"
         />
         Listo, tu talla {{ size }} ya está en la bolsa.
-        <NuxtLink
-          :to="STORE_ROUTES.cart"
+        <button
+          type="button"
           class="font-medium text-accent underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent"
+          @click="cart.open()"
         >
           Ver bolsa
-        </NuxtLink>
+        </button>
       </p>
     </div>
 

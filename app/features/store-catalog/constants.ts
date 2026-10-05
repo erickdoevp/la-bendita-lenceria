@@ -1,9 +1,10 @@
-// Rutas publicas de la tienda. Las de producto, carrito y busqueda aun no existen.
+// Rutas publicas de la tienda. Las de carrito, pago y busqueda aun no existen.
 export const STORE_ROUTES = {
   home: '/',
   newArrivals: '/novedades',
   collections: '/colecciones',
   cart: '/carrito',
+  checkout: '/pagar',
   search: '/buscar',
   sizeGuide: '/guia-de-tallas',
   product: (slug: string) => `/productos/${slug}`,

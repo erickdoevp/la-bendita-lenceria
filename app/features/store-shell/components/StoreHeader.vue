@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CustomerMenu } from '~/features/customer-auth'
+import { CartButton, CartSlideover } from '~/features/store-cart'
 import { STORE_ROUTES } from '~/features/store-catalog'
 import { useStoreNavigation } from '../composables/useStoreNavigation'
 import { STORE_ANNOUNCEMENT } from '../constants'
@@ -8,9 +9,6 @@ import StoreMobileMenu from './StoreMobileMenu.vue'
 
 const menuOpen = ref(false)
 const { roots, leading, trailing } = await useStoreNavigation()
-
-// TODO: leer del store del carrito cuando exista
-const cartCount = 0
 </script>
 
 <template>
@@ -65,22 +63,7 @@ const cartCount = 0
         <div class="hidden sm:block">
           <CustomerMenu />
         </div>
-        <NuxtLink
-          :to="STORE_ROUTES.cart"
-          class="relative grid size-10 place-items-center rounded-xl text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
-          :aria-label="cartCount ? `Carrito, ${cartCount} artículos` : 'Carrito'"
-        >
-          <Icon
-            name="ph:handbag"
-            class="size-5"
-            aria-hidden="true"
-          />
-          <span
-            v-if="cartCount"
-            class="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-semibold leading-4 text-accent-ink"
-            aria-hidden="true"
-          >{{ cartCount }}</span>
-        </NuxtLink>
+        <CartButton />
       </div>
     </div>
 
@@ -90,5 +73,6 @@ const cartCount = 0
       :leading="leading"
       :trailing="trailing"
     />
+    <CartSlideover />
   </header>
 </template>

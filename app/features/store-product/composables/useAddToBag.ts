@@ -1,26 +1,44 @@
-import type { ProductVariantOption } from '../types'
+import { useCartStore } from '~/features/store-cart'
+import type { ProductColorOption, ProductVariantOption, StoreProductDetail } from '../types'
 
 export type AddToBagState = 'idle' | 'adding' | 'added' | 'error'
 
-/**
- * Agrega la variante a la bolsa.
- * TODO: reemplazar por el store del carrito (POST /cart/items, con GUEST_CART_TOKEN_KEY
- * para clientas sin sesion). Por ahora solo simula la peticion para mostrar los estados.
- */
+export interface AddToBagRequest {
+  product: StoreProductDetail
+  variant: ProductVariantOption
+  color: ProductColorOption | null
+  imageUrl: string | null
+  quantity: number
+}
+
+/** Agrega la variante a la bolsa; al lograrlo, el panel lateral de la bolsa se abre solo. */
 export function useAddToBag() {
+  const cart = useCartStore()
   const state = ref<AddToBagState>('idle')
   const error = ref<string | null>(null)
   let resetTimer: ReturnType<typeof setTimeout> | undefined
 
-  async function add(variant: ProductVariantOption, quantity: number) {
+  async function add({ product, variant, color, imageUrl, quantity }: AddToBagRequest) {
     clearTimeout(resetTimer)
     state.value = 'adding'
     error.value = null
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      if (quantity > variant.stock) {
-        throw new Error(variant.stock === 1 ? 'Solo queda 1 pieza en esta talla.' : `Solo quedan ${variant.stock} piezas en esta talla.`)
-      }
+      await cart.add({
+        variantId: variant.id,
+        quantity,
+        line: {
+          productId: product.id,
+          slug: product.slug,
+          name: product.name,
+          imageUrl,
+          colorName: color?.name ?? null,
+          colorHex: color?.hex ?? null,
+          size: variant.size,
+          unitPrice: variant.price,
+          compareAtPrice: product.compareAtPrice && product.compareAtPrice > variant.price ? product.compareAtPrice : null,
+          stock: variant.stock,
+        },
+      })
       state.value = 'added'
       resetTimer = setTimeout(() => (state.value = 'idle'), 4000)
     }
