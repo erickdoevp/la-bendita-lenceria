@@ -1,0 +1,15 @@
+// API publica del feature customer-auth (sesion del cliente en la tienda).
+// Fuera del feature, importa solo desde aqui.
+export { default as CustomerAuthShell } from './components/CustomerAuthShell.vue'
+export { default as CustomerAvatar } from './components/CustomerAvatar.vue'
+export { default as CustomerLoginForm } from './components/CustomerLoginForm.vue'
+export { default as CustomerMenu } from './components/CustomerMenu.vue'
+export { default as PasswordChecklist } from './components/PasswordChecklist.vue'
+export { default as PasswordInput } from './components/PasswordInput.vue'
+export { default as RegisterForm } from './components/RegisterForm.vue'
+export { useCustomerFetch } from './composables/useCustomerFetch'
+export type { CustomerFetch } from './composables/useCustomerFetch'
+export { useCustomerAuthStore } from './stores/customer-auth.store'
+export { CUSTOMER_AUTH_ROUTES, GUEST_CART_TOKEN_KEY, LOGIN_NOTICES } from './constants'
+export type { LoginNotice } from './constants'
+export { getSafeStoreRedirect } from './utils/redirect'

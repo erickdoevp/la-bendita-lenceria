@@ -1,0 +1,11 @@
+// API publica del feature inventory. Fuera del feature, importa solo desde aqui.
+export { default as LowStockPanel } from './components/LowStockPanel.vue'
+export { default as MovementsManager } from './components/MovementsManager.vue'
+export { default as OrderStockMovements } from './components/OrderStockMovements.vue'
+export { default as StockManager } from './components/StockManager.vue'
+export { default as VariantInventoryDetail } from './components/VariantInventoryDetail.vue'
+export { INVENTORY_ROUTES, MOVEMENT_TYPE_LABELS } from './constants'
+export { useLowStockStore } from './stores/low-stock.store'
+export { useMovementsStore } from './stores/movements.store'
+export { useStockListStore } from './stores/stock-list.store'
+export type { Inventory, StockLevels, StockMovement, StockMovementType, VariantStock } from './types'
