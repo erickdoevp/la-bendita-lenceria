@@ -1,9 +1,11 @@
 <script setup lang="ts">
-const props = defineProps<{
+// Sin default, Vue convierte un boolean ausente en false y ocultaria los botones
+const props = withDefaults(defineProps<{
   name: string
   deleting?: boolean
   editable?: boolean
-}>()
+  deletable?: boolean
+}>(), { editable: true, deletable: true })
 
 const emit = defineEmits<{ edit: [], delete: [] }>()
 const confirming = ref(false)
@@ -36,7 +38,7 @@ watch(() => props.deleting, (value, previous) => {
     </template>
     <template v-else>
       <UiButton
-        v-if="editable !== false"
+        v-if="editable"
         variant="ghost"
         size="sm"
         icon="ph:pencil-simple"
@@ -44,6 +46,7 @@ watch(() => props.deleting, (value, previous) => {
         @click="emit('edit')"
       />
       <UiButton
+        v-if="deletable"
         variant="ghost"
         size="sm"
         icon="ph:trash"

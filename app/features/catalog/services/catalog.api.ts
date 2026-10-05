@@ -1,5 +1,5 @@
 import type { useAuthFetch } from '~/features/auth'
-import type { CategoryRequest, ColorRequest, SizeRequest, TaxRequest } from '../schemas'
+import type { CategoryRequest, CategoryUpdateRequest, ColorRequest, SizeRequest, TaxRequest } from '../schemas'
 import type { Category, CategoryNode, Color, Size, TaxConfig } from '../types'
 
 type AuthFetch = ReturnType<typeof useAuthFetch>
@@ -20,24 +20,31 @@ function cleanQuery(query: object) {
   return Object.fromEntries(Object.entries(query).filter(([, v]) => v !== '' && v != null))
 }
 
+/** "data" debe ir como Blob JSON o Spring no la puede leer. */
+function toCategoryFormData(data: CategoryUpdateRequest, image: File | null) {
+  const body = new FormData()
+  body.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }))
+  if (image) body.append('image', image)
+  return body
+}
+
 export function createCatalogApi(authFetch: AuthFetch) {
   return {
     // Impuestos
     listTaxes: () => authFetch<TaxConfig[]>('/tax'),
     createTax: (body: TaxRequest) => authFetch<TaxConfig>('/tax', { method: 'POST', body }),
+    updateTax: (id: string, body: TaxRequest) => authFetch<TaxConfig>(`/tax/${id}`, { method: 'PUT', body }),
     activateTax: (id: string) => authFetch<TaxConfig>(`/tax/${id}/activate`, { method: 'PATCH' }),
 
     // Categorias
     categoryTree: () => authFetch<CategoryNode[]>('/categories/tree'),
     listCategories: (query: CategoryListQuery) =>
       authFetch<RawPage<Category>>('/categories/admin', { query: cleanQuery(query) }).then(toPage),
-    createCategory: (data: CategoryRequest, image: File | null) => {
-      // "data" debe ir como Blob JSON o Spring no la puede leer
-      const body = new FormData()
-      body.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }))
-      if (image) body.append('image', image)
-      return authFetch<Category>('/categories', { method: 'POST', body })
-    },
+    createCategory: (data: CategoryRequest, image: File | null) =>
+      authFetch<Category>('/categories', { method: 'POST', body: toCategoryFormData(data, image) }),
+    // Parcial: solo cambia lo que se manda; la imagen reemplaza a la anterior
+    updateCategory: (id: string, data: CategoryUpdateRequest, image: File | null) =>
+      authFetch<Category>(`/categories/${id}`, { method: 'PUT', body: toCategoryFormData(data, image) }),
 
     // Tallas
     listSizes: () => authFetch<Size[]>('/sizes'),

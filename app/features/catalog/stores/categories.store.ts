@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { CategoryRequest } from '../schemas'
+import type { CategoryRequest, CategoryUpdateRequest } from '../schemas'
 import { useCatalogApi } from '../services'
 import type { CategoryNode } from '../types'
 import { flattenCategoryTree } from '../utils/category-tree'
@@ -26,6 +26,14 @@ export const useCategoriesStore = defineStore('catalog-categories', () => {
     return category
   }
 
+  async function update(id: string, data: CategoryUpdateRequest, image: File | null) {
+    const category = await api.updateCategory(id, data, image)
+    // Nombre, padre o estado cambian el arbol del selector
+    await tree.load(true)
+    void list.load()
+    return category
+  }
+
   return {
     tree: tree.data,
     options,
@@ -34,5 +42,6 @@ export const useCategoriesStore = defineStore('catalog-categories', () => {
     list,
     fetchTree: tree.load,
     create,
+    update,
   }
 })

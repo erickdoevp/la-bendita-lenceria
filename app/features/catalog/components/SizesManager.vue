@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useSizesStore } from '../stores/sizes.store'
 import type { Size } from '../types'
+import { useEditModal } from '../utils/edit-modal'
 import CatalogRowActions from './CatalogRowActions.vue'
 import CatalogTableSkeleton from './CatalogTableSkeleton.vue'
 import SizeForm from './SizeForm.vue'
 
 const store = useSizesStore()
-const editing = ref<Size | null>(null)
+const { editing, open: editOpen } = useEditModal<Size>()
 const deletingId = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 
@@ -25,7 +26,6 @@ async function onDelete(size: Size) {
   actionError.value = null
   try {
     await store.remove(size.id)
-    if (editing.value?.id === size.id) editing.value = null
   }
   catch (error) {
     actionError.value = parseApiError(error, {
@@ -94,7 +94,6 @@ async function onDelete(size: Size) {
               <tr
                 v-for="size in items"
                 :key="size.id"
-                :class="editing?.id === size.id && 'bg-accent/5'"
               >
                 <td class="px-5 py-3 tabular-nums text-ink-muted sm:px-6">
                   {{ size.sortOrder }}
@@ -128,14 +127,21 @@ async function onDelete(size: Size) {
 
     <UiPanel
       class="lg:sticky lg:top-6"
-      :title="editing ? `Editar ${editing.name}` : 'Nueva talla'"
+      title="Nueva talla"
       description="El orden define cómo se muestran en la tienda (XS = 1, S = 2...)."
+    >
+      <SizeForm />
+    </UiPanel>
+
+    <UiModal
+      v-model:open="editOpen"
+      :title="`Editar talla ${editing?.name ?? ''}`"
     >
       <SizeForm
         :size="editing"
         @saved="editing = null"
         @cancel="editing = null"
       />
-    </UiPanel>
+    </UiModal>
   </div>
 </template>

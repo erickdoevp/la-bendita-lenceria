@@ -3,14 +3,30 @@ import { taxSchema } from '../schemas'
 import { useTaxesStore } from '../stores/taxes.store'
 import type { TaxConfig } from '../types'
 
-const emit = defineEmits<{ saved: [tax: TaxConfig] }>()
+const props = defineProps<{ tax?: TaxConfig | null }>()
+const emit = defineEmits<{ saved: [tax: TaxConfig], cancel: [] }>()
 
 const store = useTaxesStore()
 const { fieldErrors, formError, validate, applyApiError, clearField, reset } = useFormErrors()
-const values = reactive({ name: '', rate: '' as string | number, active: false })
 const pending = ref(false)
 const uid = useId()
+const isEdit = computed(() => Boolean(props.tax))
+// El IVA global no se apaga desde aqui: se reemplaza activando otro
+const isGlobal = computed(() => Boolean(props.tax?.active))
 
+const initialValues = () => ({
+  name: props.tax?.name ?? '',
+  rate: (props.tax ? Number((props.tax.rate * 100).toFixed(2)) : '') as string | number,
+  active: props.tax?.active ?? false,
+})
+const values = reactive(initialValues())
+
+function fill() {
+  Object.assign(values, initialValues())
+  reset()
+}
+
+watch(() => props.tax, fill)
 watch(() => values.name, () => clearField('name'))
 watch(() => values.rate, () => clearField('rate'))
 
@@ -20,9 +36,13 @@ async function onSubmit() {
 
   pending.value = true
   try {
-    emit('saved', await store.create(payload))
-    Object.assign(values, { name: '', rate: '', active: false })
-    reset()
+    if (props.tax) {
+      emit('saved', await store.update(props.tax.id, payload))
+    }
+    else {
+      emit('saved', await store.create(payload))
+      fill()
+    }
   }
   catch (error) {
     applyApiError(error)
@@ -80,19 +100,40 @@ async function onSubmit() {
       />
     </UiField>
 
+    <p
+      v-if="isGlobal"
+      class="flex items-start gap-2 text-[13px] text-ink-muted"
+    >
+      <Icon
+        name="ph:check-circle-fill"
+        class="mt-0.5 size-4 shrink-0 text-accent"
+        aria-hidden="true"
+      />
+      Es el IVA global. Para dejar de usarlo, activa otro impuesto.
+    </p>
     <UiSwitch
+      v-else
       :id="`${uid}-active`"
       v-model="values.active"
       label="Usar como IVA global"
       description="Reemplaza al IVA activo actual."
     />
 
-    <UiButton
-      type="submit"
-      class="justify-self-start"
-      :loading="pending"
-    >
-      Crear impuesto
-    </UiButton>
+    <div class="flex flex-wrap gap-2">
+      <UiButton
+        type="submit"
+        :loading="pending"
+      >
+        {{ isEdit ? 'Guardar cambios' : 'Crear impuesto' }}
+      </UiButton>
+      <UiButton
+        v-if="isEdit"
+        variant="secondary"
+        :disabled="pending"
+        @click="emit('cancel')"
+      >
+        Cancelar
+      </UiButton>
+    </div>
   </form>
 </template>

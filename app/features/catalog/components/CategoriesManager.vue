@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { useCategoriesStore } from '../stores/categories.store'
+import type { Category } from '../types'
+import { useEditModal } from '../utils/edit-modal'
+import CatalogRowActions from './CatalogRowActions.vue'
 import CatalogTableSkeleton from './CatalogTableSkeleton.vue'
 import CategoryForm from './CategoryForm.vue'
 
 const store = useCategoriesStore()
+const { editing, open: editOpen } = useEditModal<Category>()
 const page = computed(() => store.list.data)
 const items = computed(() => page.value?.items ?? [])
 const filtered = computed(() => Boolean(store.list.filters.name || store.list.filters.active))
@@ -77,8 +81,11 @@ watch(() => [store.list.filters.name, store.list.filters.active], () => store.li
                 <th class="pb-3 font-medium">
                   Padre
                 </th>
-                <th class="px-5 pb-3 text-right font-medium sm:px-6">
+                <th class="pb-3 text-right font-medium">
                   Estado
+                </th>
+                <th class="px-5 pb-3 sm:px-6">
+                  <span class="sr-only">Acciones</span>
                 </th>
               </tr>
             </thead>
@@ -118,10 +125,17 @@ watch(() => [store.list.filters.name, store.list.filters.active], () => store.li
                 <td class="py-3 text-ink-muted">
                   {{ category.parent?.name ?? 'Raíz' }}
                 </td>
-                <td class="px-5 py-3 text-right sm:px-6">
+                <td class="py-3 text-right">
                   <span :class="category.active ? 'text-ink' : 'text-ink-muted'">
                     {{ category.active ? 'Activa' : 'Inactiva' }}
                   </span>
+                </td>
+                <td class="w-px px-5 py-2 sm:px-6">
+                  <CatalogRowActions
+                    :name="category.name"
+                    :deletable="false"
+                    @edit="editing = category"
+                  />
                 </td>
               </tr>
             </tbody>
@@ -146,5 +160,17 @@ watch(() => [store.list.filters.name, store.list.filters.active], () => store.li
     >
       <CategoryForm />
     </UiPanel>
+
+    <UiModal
+      v-model:open="editOpen"
+      :title="`Editar categoría ${editing?.name ?? ''}`"
+      description="Los cambios se reflejan en la tienda y en el selector de artículos."
+    >
+      <CategoryForm
+        :category="editing"
+        @saved="editing = null"
+        @cancel="editing = null"
+      />
+    </UiModal>
   </div>
 </template>

@@ -49,3 +49,4 @@ export type ColorRequest = z.output<typeof colorSchema>
 export type TaxRequest = z.output<typeof taxSchema>
 export type CategoryFormOutput = z.output<typeof categorySchema>
 export type CategoryRequest = Omit<CategoryFormOutput, 'image'>
+export type CategoryUpdateRequest = Partial<CategoryRequest>

@@ -10,3 +10,10 @@ export function flattenCategoryTree(nodes: CategoryNode[], depth = 0, parentPath
     ]
   })
 }
+
+/** Arbol sin una rama: una categoria no puede colgar de si misma ni de sus hijas. */
+export function withoutBranch(nodes: CategoryNode[], id: string): CategoryNode[] {
+  return nodes
+    .filter(node => node.id !== id)
+    .map(node => ({ ...node, children: withoutBranch(node.children ?? [], id) }))
+}

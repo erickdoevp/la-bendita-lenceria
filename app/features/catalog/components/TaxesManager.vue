@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { useTaxesStore } from '../stores/taxes.store'
 import type { TaxConfig } from '../types'
+import { useEditModal } from '../utils/edit-modal'
+import CatalogRowActions from './CatalogRowActions.vue'
 import CatalogTableSkeleton from './CatalogTableSkeleton.vue'
 import TaxForm from './TaxForm.vue'
 
 const store = useTaxesStore()
+const { editing, open: editOpen } = useEditModal<TaxConfig>()
 const activatingId = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 
@@ -71,8 +74,11 @@ async function onActivate(tax: TaxConfig) {
                 <th class="pb-3 font-medium">
                   Tasa
                 </th>
-                <th class="px-5 pb-3 text-right font-medium sm:px-6">
+                <th class="pb-3 text-right font-medium">
                   Estado
+                </th>
+                <th class="px-5 pb-3 sm:px-6">
+                  <span class="sr-only">Acciones</span>
                 </th>
               </tr>
             </thead>
@@ -87,7 +93,7 @@ async function onActivate(tax: TaxConfig) {
                 <td class="py-3 tabular-nums text-ink-muted">
                   {{ percent(tax.rate) }}
                 </td>
-                <td class="px-5 py-2 text-right sm:px-6">
+                <td class="py-2 text-right">
                   <span
                     v-if="tax.active"
                     class="inline-flex h-9 items-center gap-1.5 text-sm font-medium text-accent"
@@ -110,6 +116,13 @@ async function onActivate(tax: TaxConfig) {
                     Activar
                   </UiButton>
                 </td>
+                <td class="w-px px-5 py-2 sm:px-6">
+                  <CatalogRowActions
+                    :name="tax.name"
+                    :deletable="false"
+                    @edit="editing = tax"
+                  />
+                </td>
               </tr>
             </tbody>
           </table>
@@ -123,5 +136,16 @@ async function onActivate(tax: TaxConfig) {
     >
       <TaxForm />
     </UiPanel>
+
+    <UiModal
+      v-model:open="editOpen"
+      :title="`Editar ${editing?.name ?? 'impuesto'}`"
+    >
+      <TaxForm
+        :tax="editing"
+        @saved="editing = null"
+        @cancel="editing = null"
+      />
+    </UiModal>
   </div>
 </template>

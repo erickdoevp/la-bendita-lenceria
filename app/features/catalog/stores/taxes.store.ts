@@ -23,6 +23,13 @@ export const useTaxesStore = defineStore('catalog-taxes', () => {
     return tax
   }
 
+  async function update(id: string, body: TaxRequest) {
+    const tax = await api.updateTax(id, body)
+    all.data.value = all.data.value.map(t => (t.id === id ? tax : t))
+    if (tax.active) markActive(tax.id)
+    return tax
+  }
+
   async function activate(id: string) {
     await api.activateTax(id)
     markActive(id)
@@ -35,6 +42,7 @@ export const useTaxesStore = defineStore('catalog-taxes', () => {
     error: all.error,
     fetchAll: all.load,
     create,
+    update,
     activate,
   }
 })

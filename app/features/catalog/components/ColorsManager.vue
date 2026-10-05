@@ -5,9 +5,10 @@ import CatalogRowActions from './CatalogRowActions.vue'
 import CatalogTableSkeleton from './CatalogTableSkeleton.vue'
 import ColorForm from './ColorForm.vue'
 import ColorSwatch from './ColorSwatch.vue'
+import { useEditModal } from '../utils/edit-modal'
 
 const store = useColorsStore()
-const editing = ref<Color | null>(null)
+const { editing, open: editOpen } = useEditModal<Color>()
 const deletingId = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 
@@ -26,7 +27,6 @@ async function onDelete(color: Color) {
   actionError.value = null
   try {
     await store.remove(color.id)
-    if (editing.value?.id === color.id) editing.value = null
   }
   catch (error) {
     actionError.value = parseApiError(error, {
@@ -95,7 +95,6 @@ async function onDelete(color: Color) {
               <tr
                 v-for="color in items"
                 :key="color.id"
-                :class="editing?.id === color.id && 'bg-accent/5'"
               >
                 <td class="px-5 py-3 sm:px-6">
                   <span class="flex items-center gap-3 font-medium text-ink">
@@ -132,14 +131,21 @@ async function onDelete(color: Color) {
 
     <UiPanel
       class="lg:sticky lg:top-6"
-      :title="editing ? `Editar ${editing.name}` : 'Nuevo color'"
+      title="Nuevo color"
       description="El hex pinta la muestra que ve la clienta en la tienda."
+    >
+      <ColorForm />
+    </UiPanel>
+
+    <UiModal
+      v-model:open="editOpen"
+      :title="`Editar color ${editing?.name ?? ''}`"
     >
       <ColorForm
         :color="editing"
         @saved="editing = null"
         @cancel="editing = null"
       />
-    </UiPanel>
+    </UiModal>
   </div>
 </template>
