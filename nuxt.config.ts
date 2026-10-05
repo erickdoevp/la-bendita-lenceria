@@ -34,6 +34,9 @@ export default defineNuxtConfig({
     '/cuenta/**': { ssr: false },
     '/login': { ssr: false },
     '/registro': { ssr: false },
+    // El pago depende de la sesion en memoria y del token de invitada en localStorage
+    '/pagar': { ssr: false },
+    '/pagar/**': { ssr: false },
   },
 
   vite: {

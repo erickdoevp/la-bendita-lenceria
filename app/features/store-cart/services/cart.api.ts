@@ -6,12 +6,13 @@ import type { AddToCartInput, Cart, CartLine } from '../types'
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 /**
- * Endpoints del carrito.
+ * Endpoints del carrito (FLUJO-CHECKOUT-Y-PAGOS, seccion 4).
  * TODO al integrar:
- * - Invitada: mandar GUEST_CART_TOKEN_KEY (customer-auth) y guardar el token que regrese el backend
- * - Con sesion: Authorization Bearer; al iniciar sesion customer-auth ya llama POST /cart/merge
- * - GET /cart, POST /cart/items { variantId, quantity }, PATCH /cart/items/{id}, DELETE /cart/items/{id}
- * - Mapear CartResponseDto -> Cart (precio final por variante, stock disponible e imagen del color)
+ * - Con sesion: GET /cart, POST /cart/items { variantId, quantity }, PATCH y DELETE /cart/items/{id}
+ * - Invitada: POST /public/cart crea el carrito y devuelve guestToken (guardarlo en GUEST_CART_TOKEN_KEY);
+ *   luego /public/cart/{guestToken}/... Al iniciar sesion customer-auth ya llama POST /cart/merge
+ * - Mapear CartResponseDto -> Cart (items[].productName, sizeName, subtotal...). Falta que el DTO
+ *   traiga slug, stock disponible y precio anterior: pedirlos al backend
  */
 export function createCartApi(publicFetch: PublicFetch) {
   // Los errores del mock se leen igual que los del backend con parseApiError
@@ -38,6 +39,17 @@ export function createCartApi(publicFetch: PublicFetch) {
       USE_CART_MOCKS
         ? mock(() => cartMock.remove(lineId))
         : publicFetch<Cart>(`/cart/items/${lineId}`, { method: 'DELETE' }),
+
+    /**
+     * Despues de crear la orden. El backend ya movio el carrito a CHECKOUT: GET /cart devuelve
+     * uno vacio (con sesion) o 404 (invitada, hay que crear otro con POST /public/cart).
+     */
+    afterCheckout: (): Promise<Cart> =>
+      USE_CART_MOCKS ? mock(cartMock.checkout, 0) : publicFetch<Cart>('/cart'),
+
+    /** La orden se cancelo o expiro: el backend regresa el carrito a ACTIVE. */
+    afterOrderCanceled: (): Promise<Cart> =>
+      USE_CART_MOCKS ? mock(cartMock.release, 0) : publicFetch<Cart>('/cart'),
 
     /** Deshacer: con el backend real es volver a agregar la variante. */
     restore: (line: CartLine, index: number): Promise<Cart> =>

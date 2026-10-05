@@ -56,6 +56,27 @@ function write(cart: Cart) {
   }
 }
 
+const HELD_KEY = `${CART_MOCK_STORAGE_KEY}-held`
+
+function readHeld(): CartLine[] {
+  try {
+    return JSON.parse(localStorage.getItem(HELD_KEY) ?? '[]') as CartLine[]
+  }
+  catch {
+    return []
+  }
+}
+
+function writeHeld(lines: CartLine[]) {
+  try {
+    if (lines.length) localStorage.setItem(HELD_KEY, JSON.stringify(lines))
+    else localStorage.removeItem(HELD_KEY)
+  }
+  catch {
+    // Sin almacenamiento no hay nada que apartar
+  }
+}
+
 const stockMessage = (stock: number) =>
   stock <= 0
     ? 'Esta talla se agotó.'
@@ -108,6 +129,26 @@ export const cartMock = {
   remove(lineId: string): Cart {
     const cart = read()
     cart.lines = cart.lines.filter(l => l.id !== lineId)
+    write(cart)
+    return cart
+  },
+
+  /** Al crear la orden la bolsa pasa a CHECKOUT: queda vacia y sus piezas se apartan. */
+  checkout(): Cart {
+    const cart = read()
+    writeHeld(cart.lines)
+    cart.lines = []
+    write(cart)
+    return cart
+  },
+
+  /** La orden se cancelo o expiro: las piezas apartadas regresan a la bolsa. */
+  release(): Cart {
+    const cart = read()
+    for (const line of readHeld()) {
+      if (!cart.lines.some(l => l.variantId === line.variantId)) cart.lines.push(line)
+    }
+    writeHeld([])
     write(cart)
     return cart
   },

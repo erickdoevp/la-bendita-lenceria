@@ -117,6 +117,19 @@ export const useCartStore = defineStore('store-cart', () => {
     await withLine(removed.line.id, () => api.restore(removed.line, removed.index))
   }
 
+  /** Sincroniza la bolsa con lo que hizo el backend al crear o cancelar una orden. */
+  async function syncWithOrder(event: 'created' | 'canceled') {
+    clearUndo()
+    try {
+      cart.value = event === 'created' ? await api.afterCheckout() : await api.afterOrderCanceled()
+      status.value = 'ready'
+    }
+    catch {
+      // Si falla, la proxima apertura de la bolsa la vuelve a pedir
+      status.value = 'idle'
+    }
+  }
+
   function clearUndo() {
     clearTimeout(undoTimer)
     lastRemoved.value = null
@@ -142,5 +155,6 @@ export const useCartStore = defineStore('store-cart', () => {
     remove,
     undoRemove,
     clearUndo,
+    syncWithOrder,
   }
 })
