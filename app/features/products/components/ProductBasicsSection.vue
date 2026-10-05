@@ -1,8 +1,27 @@
 <script setup lang="ts">
+import type { EditorToolbarItem } from '@nuxt/ui'
 import { useProductDraftStore } from '../stores/product-draft.store'
 
 const draft = useProductDraftStore()
 const slugPreview = computed(() => slugify(draft.form.name))
+
+// Formato corto: la ficha del articulo no necesita titulos grandes, citas ni codigo
+const toolbarItems: EditorToolbarItem[][] = [
+  [
+    { kind: 'mark', mark: 'bold', icon: 'ph:text-b', tooltip: { text: 'Negrita' } },
+    { kind: 'mark', mark: 'italic', icon: 'ph:text-italic', tooltip: { text: 'Cursiva' } },
+    { kind: 'mark', mark: 'underline', icon: 'ph:text-underline', tooltip: { text: 'Subrayado' } },
+  ],
+  [
+    { kind: 'heading', level: 3, icon: 'ph:text-h-three', tooltip: { text: 'Subtítulo' } },
+    { kind: 'bulletList', icon: 'ph:list-bullets', tooltip: { text: 'Lista' } },
+    { kind: 'orderedList', icon: 'ph:list-numbers', tooltip: { text: 'Lista numerada' } },
+  ],
+  [
+    { kind: 'undo', icon: 'ph:arrow-counter-clockwise', tooltip: { text: 'Deshacer' } },
+    { kind: 'redo', icon: 'ph:arrow-clockwise', tooltip: { text: 'Rehacer' } },
+  ],
+]
 </script>
 
 <template>
@@ -38,15 +57,27 @@ const slugPreview = computed(() => slugify(draft.form.name))
 
       <UFormField
         label="Descripción"
-        help="Materiales, ajuste y cuidados. Separa párrafos con una línea en blanco."
+        help="Materiales, ajuste y cuidados."
         :error="draft.fieldErrors.description"
         hint="Opcional"
       >
-        <UTextarea
+        <UEditor
+          v-slot="{ editor }"
           v-model="draft.form.description"
-          :rows="5"
-          autoresize
-        />
+          content-type="json"
+          :starter-kit="{ blockquote: false, code: false, codeBlock: false, horizontalRule: false, link: false }"
+          :image="false"
+          :mention="false"
+          placeholder="Bralette de encaje elástico con varilla suave…"
+          class="rounded-md border border-default focus-within:border-primary"
+          :ui="{ content: 'min-h-36', base: 'px-3 py-2 sm:px-3 *:my-2' }"
+        >
+          <UEditorToolbar
+            :editor="editor"
+            :items="toolbarItems"
+            class="border-b border-default px-1 py-1"
+          />
+        </UEditor>
       </UFormField>
     </div>
   </UCard>

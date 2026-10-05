@@ -3,6 +3,7 @@ import { getFieldErrors } from '#shared/utils/validation'
 import { useSizesStore } from '~/features/catalog'
 import { productFilesSchema, productSchema } from '../schemas'
 import { useProductsApi } from '../services'
+import type { RichTextDoc } from '~/utils/rich-text'
 import type { ProductDetail, ProductStatus, VariantDraft } from '../types'
 import { buildProductFormData } from '../utils/form-data'
 
@@ -13,7 +14,7 @@ const variantKey = (colorId: string, sizeId: string) => `${colorId}:${sizeId}`
 const initialForm = () => ({
   name: '',
   slug: '',
-  description: '',
+  description: undefined as RichTextDoc | undefined,
   basePrice: '' as number | string,
   categoryId: '',
   taxConfigId: '',

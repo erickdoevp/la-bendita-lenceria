@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { RichTextDoc } from '~/utils/rich-text'
 
 /** Numero de un <input>: vacio usa `fallback` (o falla si no hay fallback). */
 const numberInput = <T extends z.ZodType>(schema: T, fallback?: number) =>
@@ -47,7 +48,8 @@ export const productSchema = z
       .trim()
       .regex(/^$|^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Solo minúsculas, números y guiones (ej. bralette-encaje).')
       .transform(slug => slug || undefined),
-    description: z.string().transform(toRichTextDoc),
+    // JSON de TipTap tal cual lo emite UEditor; se omite si quedo vacio
+    description: z.custom<RichTextDoc | undefined>().transform(normalizeRichTextDoc),
     basePrice: numberInput(z.number({ error: 'Escribe el precio base.' }).positive('El precio base debe ser mayor a 0.')),
     categoryId: z.string({ error: 'Elige una categoría.' }).min(1, 'Elige una categoría.'),
     taxConfigId: z.string().transform(id => id || null),
