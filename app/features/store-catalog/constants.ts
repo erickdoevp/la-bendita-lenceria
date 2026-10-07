@@ -16,5 +16,5 @@ export const STORE_ROUTES = {
 /** Raiz -> subcategoria -> tipo. */
 export const MAX_CATEGORY_DEPTH = 3
 
-/** Mientras no exista el endpoint publico, el arbol sale de datos de ejemplo. */
-export const USE_CATEGORY_MOCKS = true
+/** true = arbol de ejemplo en vez de GET /categories/tree. */
+export const USE_CATEGORY_MOCKS = false

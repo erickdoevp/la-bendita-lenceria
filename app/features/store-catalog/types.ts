@@ -23,8 +23,22 @@ export interface StoreProduct {
   isNew: boolean
 }
 
+/** Nodo tal cual lo devuelve GET /categories/tree (raices con hijas anidadas). */
+export interface CategoryTreeDto {
+  id: string
+  name: string
+  slug: string
+  /** Documento TipTap o null. */
+  description: unknown
+  imageUrl: string | null
+  active: boolean
+  children: CategoryTreeDto[]
+  createdAt: string
+  updatedAt: string
+}
+
 /**
- * Nodo del arbol publico de categorias (deriva de CategoryNode de GET /categories/tree).
+ * Nodo del arbol publico de categorias (deriva de CategoryTreeDto de GET /categories/tree).
  * Raiz (Lenceria) -> subcategoria (Brasieres) -> tipo (Push up): maximo 3 niveles.
  */
 export interface StoreCategory {
