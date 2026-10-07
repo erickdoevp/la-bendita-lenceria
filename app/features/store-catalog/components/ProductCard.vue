@@ -13,6 +13,11 @@ const onSale = computed(() =>
 )
 const MAX_SWATCHES = 4
 const extraColors = computed(() => Math.max(0, props.product.colors.length - MAX_SWATCHES))
+const rating = computed(() =>
+  props.product.averageRating != null && props.product.reviewCount
+    ? { value: props.product.averageRating.toFixed(1), count: props.product.reviewCount }
+    : null,
+)
 </script>
 
 <template>
@@ -79,6 +84,18 @@ const extraColors = computed(() => Math.max(0, props.product.colors.length - MAX
           {{ product.name }}
         </NuxtLink>
       </h3>
+      <p
+        v-if="rating"
+        class="flex items-center gap-1 text-[13px] tabular-nums text-ink-muted"
+        :aria-label="`${rating.value} de 5 estrellas, ${rating.count} ${rating.count === 1 ? 'reseña' : 'reseñas'}`"
+      >
+        <Icon
+          name="ph:star-fill"
+          class="size-3.5 text-accent"
+          aria-hidden="true"
+        />
+        <span aria-hidden="true">{{ rating.value }} ({{ rating.count }})</span>
+      </p>
       <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
         <p class="flex flex-wrap items-baseline gap-x-2 text-[15px] tabular-nums">
           <span :class="onSale ? 'font-semibold text-accent' : 'text-ink'">{{ formatMoney(product.price) }}</span>

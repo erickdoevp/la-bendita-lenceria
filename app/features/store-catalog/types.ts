@@ -21,6 +21,29 @@ export interface StoreProduct {
   hoverImageUrl: string | null
   colors: StoreColor[]
   isNew: boolean
+  /** null = sin resenas. */
+  averageRating?: number | null
+  reviewCount?: number
+}
+
+/** Producto publicado tal cual llega en los listados publicos (GET /products). */
+export interface ProductSummaryDto {
+  id: string
+  name: string
+  slug: string
+  /** Precio final con IVA incluido: se muestra tal cual. */
+  basePrice: number
+  category: { id: string, name: string, slug: string }
+  /** null = IVA global. Solo informativo: el desglose sale en la orden (taxAmount). */
+  taxConfigId: string | null
+  taxName: string | null
+  taxRate: number | null
+  primaryImageUrl: string | null
+  averageRating: number | null
+  reviewCount: number
+  status: 'PUBLISHED'
+  /** ISO local sin zona: hora del servidor. */
+  publishedAt: string
 }
 
 /** Nodo tal cual lo devuelve GET /categories/tree (raices con hijas anidadas). */

@@ -13,6 +13,9 @@ export const STORE_ROUTES = {
   collection: (slug: string) => `/colecciones/${slug}`,
 } as const
 
+/** Dias desde la publicacion en que la tarjeta muestra "Nuevo". */
+export const NEW_PRODUCT_DAYS = 30
+
 /** Raiz -> subcategoria -> tipo. */
 export const MAX_CATEGORY_DEPTH = 3
 

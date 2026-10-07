@@ -1,5 +1,6 @@
-import { getMockCatalog } from '~/features/store-catalog'
-import { HOME_LATEST_LIMIT, USE_HOME_CATEGORY_MOCKS, USE_HOME_MOCKS } from '../constants'
+import type { ProductSummaryDto } from '~/features/store-catalog'
+import { getMockCatalog, toStoreProduct } from '~/features/store-catalog'
+import { HOME_LATEST_LIMIT, USE_HOME_CATEGORY_MOCKS, USE_HOME_LATEST_MOCKS, USE_HOME_MOCKS } from '../constants'
 import { HOME_CATEGORIES_MOCK, HOME_COLLECTIONS_MOCK, HOME_HERO_MOCK } from '../mocks/home.mock'
 import type { NewsletterRequest } from '../schemas'
 import type { CategoryResponseDto, HomeCategory, HomeCollection, HomeHeroContent, StoreProduct } from '../types'
@@ -31,17 +32,21 @@ function toHomeCategory(dto: CategoryResponseDto): HomeCategory {
 
 /**
  * Endpoints publicos del inicio (sin sesion).
- * TODO: al integrar el backend, mapear los DTOs (ProductDetail, Collection) a los modelos de types.ts dentro de cada metodo.
+ * TODO: al integrar el backend, mapear los DTOs (Collection) a los modelos de types.ts dentro de cada metodo.
  */
 export function createHomeApi(publicFetch: PublicFetch) {
   return {
     // TODO: banners administrables. Por ahora el hero es contenido fijo.
     hero: (): Promise<HomeHeroContent> => fromMock(HOME_HERO_MOCK),
 
-    latestProducts: (size = HOME_LATEST_LIMIT): Promise<StoreProduct[]> =>
-      USE_HOME_MOCKS
-        ? fromMock(latestFromCatalog(size))
-        : publicFetch<StoreProduct[]>('/products', { query: { sort: 'createdAt,desc', size } }),
+    // Solo la primera pagina: el resto vive en /novedades
+    latestProducts: async (size = HOME_LATEST_LIMIT): Promise<StoreProduct[]> => {
+      if (USE_HOME_LATEST_MOCKS) return fromMock(latestFromCatalog(size))
+      const raw = await publicFetch<RawPage<ProductSummaryDto>>('/products', {
+        query: { sort: 'publishedAt,desc', page: 0, size },
+      })
+      return toPage(raw).items.map(toStoreProduct)
+    },
 
     featuredCategories: async (): Promise<HomeCategory[]> => {
       if (USE_HOME_CATEGORY_MOCKS) return fromMock(HOME_CATEGORIES_MOCK)
