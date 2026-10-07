@@ -1,8 +1,8 @@
 import { getMockCatalog } from '~/features/store-catalog'
-import { HOME_LATEST_LIMIT, USE_HOME_MOCKS } from '../constants'
+import { HOME_LATEST_LIMIT, USE_HOME_CATEGORY_MOCKS, USE_HOME_MOCKS } from '../constants'
 import { HOME_CATEGORIES_MOCK, HOME_COLLECTIONS_MOCK, HOME_HERO_MOCK } from '../mocks/home.mock'
 import type { NewsletterRequest } from '../schemas'
-import type { HomeCategory, HomeCollection, HomeHeroContent, StoreProduct } from '../types'
+import type { CategoryResponseDto, HomeCategory, HomeCollection, HomeHeroContent, StoreProduct } from '../types'
 
 type FetchOptions = NonNullable<Parameters<typeof $fetch>[1]>
 export type PublicFetch = <T>(path: string, options?: FetchOptions) => Promise<T>
@@ -18,10 +18,20 @@ function latestFromCatalog(size: number): StoreProduct[] {
     .map(({ categoryId: _c, sizes: _s, createdAt: _d, sales: _v, featured: _f, ...product }) => product)
 }
 
+/** CategoryResponseDto -> HomeCategory. Las raices traen parent null; si llega una hija, su ruta incluye al padre. */
+function toHomeCategory(dto: CategoryResponseDto): HomeCategory {
+  return {
+    id: dto.id,
+    name: dto.name,
+    slugs: dto.parent ? [dto.parent.slug, dto.slug] : [dto.slug],
+    imageUrl: dto.imageUrl ?? null,
+    summary: richTextToPlain(dto.description) || null,
+  }
+}
+
 /**
  * Endpoints publicos del inicio (sin sesion).
- * TODO: al integrar el backend, mapear los DTOs (ProductDetail, CategoryNode,
- * Collection) a los modelos de types.ts dentro de cada metodo.
+ * TODO: al integrar el backend, mapear los DTOs (ProductDetail, Collection) a los modelos de types.ts dentro de cada metodo.
  */
 export function createHomeApi(publicFetch: PublicFetch) {
   return {
@@ -33,10 +43,11 @@ export function createHomeApi(publicFetch: PublicFetch) {
         ? fromMock(latestFromCatalog(size))
         : publicFetch<StoreProduct[]>('/products', { query: { sort: 'createdAt,desc', size } }),
 
-    featuredCategories: (): Promise<HomeCategory[]> =>
-      USE_HOME_MOCKS
-        ? fromMock(HOME_CATEGORIES_MOCK)
-        : publicFetch<HomeCategory[]>('/categories/tree'),
+    featuredCategories: async (): Promise<HomeCategory[]> => {
+      if (USE_HOME_CATEGORY_MOCKS) return fromMock(HOME_CATEGORIES_MOCK)
+      const roots = await publicFetch<CategoryResponseDto[]>('/categories/roots')
+      return roots.filter(dto => dto.active !== false).map(toHomeCategory)
+    },
 
     collections: (): Promise<HomeCollection[]> =>
       USE_HOME_MOCKS

@@ -4,6 +4,9 @@
  */
 export const USE_HOME_MOCKS = true
 
+/** "Compra por categoria" ya usa GET /categories/roots; true = datos de ejemplo. */
+export const USE_HOME_CATEGORY_MOCKS = false
+
 export const HOME_LATEST_LIMIT = 8
 
 export const HOME_DATA_KEYS = {

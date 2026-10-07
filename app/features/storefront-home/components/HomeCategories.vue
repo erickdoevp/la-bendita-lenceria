@@ -9,10 +9,17 @@ const { data: categories, loading, errorMessage, refresh } = useFeaturedCategori
 const MAX_CATEGORIES = 5
 const visible = computed(() => (categories.value ?? []).slice(0, MAX_CATEGORIES))
 
-const cellClass = (index: number) =>
-  index === 0
-    ? 'col-span-2 aspect-[4/3] md:row-span-2 md:aspect-auto'
+// Las raices vienen del backend y pueden ser menos de 5: el resto se estira para no dejar huecos
+function cellClass(index: number, total: number) {
+  if (index === 0) return 'col-span-2 aspect-[4/3] md:row-span-2 md:aspect-auto'
+  const rest = total - 1
+  if (rest === 1) return 'col-span-2 aspect-[4/3] md:row-span-2 md:aspect-auto'
+  // La ultima de un numero impar ocupa la fila completa de su lado
+  const wide = rest === 2 || (rest === 3 && index === 3)
+  return wide
+    ? 'col-span-2 aspect-[2/1] md:aspect-[5/2]'
     : 'aspect-[4/5] md:aspect-[5/4]'
+}
 </script>
 
 <template>
@@ -44,7 +51,7 @@ const cellClass = (index: number) =>
         v-for="n in MAX_CATEGORIES"
         :key="n"
         class="rounded-2xl"
-        :class="cellClass(n - 1)"
+        :class="cellClass(n - 1, MAX_CATEGORIES)"
       />
     </div>
 
@@ -56,9 +63,10 @@ const cellClass = (index: number) =>
         v-for="(category, index) in visible"
         :key="category.id"
         class="reveal group relative overflow-hidden rounded-2xl bg-line/40"
-        :class="cellClass(index)"
+        :class="cellClass(index, visible.length)"
       >
         <img
+          v-if="category.imageUrl"
           :src="category.imageUrl"
           :alt="category.name"
           loading="lazy"
@@ -85,7 +93,10 @@ const cellClass = (index: number) =>
                 {{ category.name }}
               </NuxtLink>
             </h3>
-            <p class="hidden text-sm text-zinc-200 sm:block">
+            <p
+              v-if="category.summary"
+              class="hidden text-sm text-zinc-200 sm:block"
+            >
               {{ category.summary }}
             </p>
           </div>

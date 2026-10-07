@@ -4,15 +4,29 @@ import type { StoreProduct } from '~/features/store-catalog'
 
 export type { StoreProduct }
 
-/** Categoria destacada en el inicio (deriva de CategoryNode). */
+/** Categoria tal cual la devuelve GET /categories/roots. */
+export interface CategoryResponseDto {
+  id: string
+  name: string
+  slug: string
+  /** Documento TipTap o null. */
+  description: unknown
+  imageUrl: string | null
+  active: boolean
+  parent: { id: string, name: string, slug: string } | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** Categoria destacada en el inicio (deriva de CategoryResponseDto). */
 export interface HomeCategory {
   id: string
   name: string
   /** Camino de slugs desde la raiz: ['lenceria', 'brasieres']. */
   slugs: string[]
-  imageUrl: string
+  imageUrl: string | null
   /** Frase corta bajo el nombre. */
-  summary: string
+  summary: string | null
 }
 
 /** Coleccion activa (deriva de Collection, ordenada por position). */
